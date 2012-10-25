@@ -11,7 +11,7 @@ define('CHPP_APP_ID', '');
 define('FB_ADMINS', '');
 
 // github repository
-define('GH_REPO', 'tagliala/StaminIA');
+define('GH_REPO', 'tagliala/SETI');
 
 // google analytics' profile ID
 define('GA_ID', 'UA-XXXXX-X');
