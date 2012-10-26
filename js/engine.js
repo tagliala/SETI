@@ -97,7 +97,7 @@
     HeadCross.prototype.attendedGoals = function(ballPossession, playCreatively) {
       var specialistsType1;
       specialistsType1 = $(".position-offensive").find(".speciality-head").length;
-      if ($(".position-winger").find(".speciality-head").length > 1 || ($(".position-winger").find(".player").length === 1 && $(".position-winger").find(".speciality-head").length === 1)) {
+      if ($(".position-winger").find(".player").length === 1 && $(".position-winger").find(".speciality-head").length === 1) {
         --specialistsType1;
       }
       return HeadCross.__super__.attendedGoals.call(this, 0.03, 0.9, specialistsType1, 0, 0, 0, ballPossession, playCreatively);

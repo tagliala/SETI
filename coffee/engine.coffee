@@ -55,7 +55,7 @@ class HeadCross extends SpecialEvent
 
   attendedGoals: (ballPossession, playCreatively) ->
     specialistsType1 = $(".position-offensive").find(".speciality-head").length
-    --specialistsType1 if ($(".position-winger").find(".speciality-head").length > 1 or ($(".position-winger").find(".player").length is 1 and $(".position-winger").find(".speciality-head").length is 1))
+    --specialistsType1 if ($(".position-winger").find(".player").length is 1 and $(".position-winger").find(".speciality-head").length is 1)
     super 0.03, 0.9, specialistsType1, 0, 0, 0, ballPossession, playCreatively
 
   isPossible: ->

@@ -2,7 +2,7 @@
 (function() {
   "use strict";
 
-  var HEAD, QUICK, TECHNICAL, UNPREDICTABLE, normalPlayer, player, resetField, technicalPlayer, unpredictablePlayer;
+  var HEAD, QUICK, TECHNICAL, UNPREDICTABLE, player, resetField;
 
   TECHNICAL = "technical";
 
@@ -23,21 +23,9 @@
     }
   };
 
-  normalPlayer = function() {
-    return "<div class=\"player speciality speciality-unpredictable\">";
-  };
-
-  technicalPlayer = function() {
-    return "<div class=\"player speciality speciality-technical\">";
-  };
-
-  unpredictablePlayer = function() {
-    return "<div class=\"player speciality speciality-unpredictable\">";
-  };
-
   resetField = function() {
     var fieldHtml;
-    fieldHtml = "<input type=\"hidden\" id=\"ballPossession\" value=\"50\"/>\n<input type=\"hidden\" id=\"playCreatively\" value=\"no\"/>\n<div class=\"soccer-field\" style=\"display: none\">\n  <div class=\"soccer-field-keeper\">\n    <ul class=\"unstyled players-row\">\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-position position-keeper drop\"><div></div></li>\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-empty-position\"></li>\n    </ul>\n  </div>\n  <div class=\"soccer-field-movement\">\n    <ul class=\"unstyled players-row players-row-defence\">\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n    </ul>\n    <ul class=\"unstyled players-row players-row-midfield\">\n      <li class=\"player-position position-offensive position-winger drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-winger drop\"><div></div></li>\n    </ul>\n    <ul class=\"unstyled players-row\">\n      <li class=\"player-empty-position\"><div class=\"trash-players hide\"><i class=\"icon-trash\"></i></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-empty-position\"><div class=\"trash-players hide\"><i class=\"icon-trash\"></i></div></li>\n    </ul>\n  </div>\n</div>";
+    fieldHtml = "<input type=\"checkbox\" id=\"setPiecesTakerHead\"/>\n<input type=\"hidden\" id=\"ballPossession\" value=\"50\"/>\n<input type=\"hidden\" id=\"playCreatively\" value=\"no\"/>\n<div class=\"soccer-field\" style=\"display: none\">\n  <div class=\"soccer-field-keeper\">\n    <ul class=\"unstyled players-row\">\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-position position-keeper drop\"><div></div></li>\n      <li class=\"player-empty-position\"></li>\n      <li class=\"player-empty-position\"></li>\n    </ul>\n  </div>\n  <div class=\"soccer-field-movement\">\n    <ul class=\"unstyled players-row players-row-defence\">\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-defender drop\"><div></div></li>\n    </ul>\n    <ul class=\"unstyled players-row players-row-midfield\">\n      <li class=\"player-position position-offensive position-winger drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-defensive position-inner drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-winger drop\"><div></div></li>\n    </ul>\n    <ul class=\"unstyled players-row\">\n      <li class=\"player-empty-position\"><div class=\"trash-players hide\"><i class=\"icon-trash\"></i></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-position position-offensive position-scorer drop\"><div></div></li>\n      <li class=\"player-empty-position\"><div class=\"trash-players hide\"><i class=\"icon-trash\"></i></div></li>\n    </ul>\n  </div>\n</div>";
     if ($("#field")[0] == null) {
       $("body").append("<div id=\"field\"></div>");
     }
@@ -52,10 +40,10 @@
       return $field = $("#field");
     });
     afterEach(function() {});
-    return describe('Quick', function() {
+    describe('Quick', function() {
       it('handles one quick scorer', function() {
         var results;
-        $(".position-scorer:nth(1)").html(player(QUICK));
+        $(".position-scorer:nth(0)").html(player(QUICK));
         results = SETI.Engine.start();
         expect(results.SE.size()).toBe(1);
         expect(results.goals).toBe(0.0675);
@@ -64,7 +52,7 @@
       });
       it('handles one quick winger', function() {
         var results;
-        $(".position-winger:nth(1)").html(player(QUICK));
+        $(".position-winger:nth(0)").html(player(QUICK));
         results = SETI.Engine.start();
         expect(results.SE.size()).toBe(1);
         expect(results.goals).toBe(0.013499999999999956);
@@ -73,14 +61,26 @@
       });
       return it('handles one quick scorer and one normal scorer', function() {
         var results;
-        $(".position-scorer:nth(1)").html(player(QUICK));
-        $(".position-scorer:nth(2)").html(player());
+        $(".position-scorer:nth(0)").html(player(QUICK));
+        $(".position-scorer:nth(1)").html(player());
         results = SETI.Engine.start();
-        console.log(results);
         expect(results.SE.size()).toBe(2);
         expect(results.goals).toBe(0.12517500000000004);
         expect(results.SE.QuickShoot).toBe(0.0675);
         return expect(results.SE.QuickPassing).toBe(0.05767500000000003);
+      });
+    });
+    return describe('Head', function() {
+      return it('handles two head wingers', function() {
+        var results;
+        $(".position-winger:nth(0)").html(player(HEAD));
+        $(".position-winger:nth(1)").html(player(HEAD));
+        results = SETI.Engine.start();
+        console.log(results);
+        expect(results.SE.size()).toBe(2);
+        expect(results.goals).toBe(0.12878100000000003);
+        expect(results.SE.HeadCross).toBe(0.05327100000000007);
+        return expect(results.SE.HeadCorner).toBe(0.07550999999999997);
       });
     });
   });
