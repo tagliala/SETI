@@ -11,17 +11,9 @@ player = (speciality = null) ->
   else
     """<div class="player">"""
 
-normalPlayer = ->
-  """<div class="player speciality speciality-unpredictable">"""
-
-technicalPlayer = ->
-  """<div class="player speciality speciality-technical">"""
-
-unpredictablePlayer = ->
-  """<div class="player speciality speciality-unpredictable">"""
-
 resetField = ->
   fieldHtml = """
+    <input type="checkbox" id="setPiecesTakerHead"/>
     <input type="hidden" id="ballPossession" value="50"/>
     <input type="hidden" id="playCreatively" value="no"/>
     <div class="soccer-field" style="display: none">
@@ -76,9 +68,7 @@ describe 'SETI.Engine', ->
   describe 'Quick', ->
     it 'handles one quick scorer', ->
       # One quick scorer only produces Quick Shoot SEs.
-      # Attended goals for QuickShoot are 0.0675
-      # Total goals are 0.0675
-      $(".position-scorer:nth(1)").html player(QUICK)
+      $(".position-scorer:nth(0)").html player(QUICK)
       results = SETI.Engine.start()
       expect(results.SE.size()).toBe 1
       expect(results.goals).toBe 0.0675
@@ -87,9 +77,7 @@ describe 'SETI.Engine', ->
 
     it 'handles one quick winger', ->
       # One quick winger only produces Quick Shoot SEs.
-      # Attended goals for QuickShoot are 0.013499999999999956
-      # Total goals are 0.013499999999999956
-      $(".position-winger:nth(1)").html player(QUICK)
+      $(".position-winger:nth(0)").html player(QUICK)
       results = SETI.Engine.start()
       expect(results.SE.size()).toBe 1
       expect(results.goals).toBe 0.013499999999999956
@@ -98,14 +86,32 @@ describe 'SETI.Engine', ->
 
     it 'handles one quick scorer and one normal scorer', ->
       # One quick scorer with one normal scorer produces Quick Shoot and Quick Pass SEs.
-      # Attended goals for QuickShoot are 0.0675
-      # Attended goals for QuickPass are 0.05767500000000003
-      # Total goals are 0.12517500000000004
-      $(".position-scorer:nth(1)").html player(QUICK)
-      $(".position-scorer:nth(2)").html player()
+      $(".position-scorer:nth(0)").html player(QUICK)
+      $(".position-scorer:nth(1)").html player()
       results = SETI.Engine.start()
-      console.log results
       expect(results.SE.size()).toBe 2
       expect(results.goals).toBe 0.12517500000000004
       expect(results.SE.QuickShoot).toBe 0.0675
       expect(results.SE.QuickPassing).toBe 0.05767500000000003
+
+    it 'handles two quick wingers and one quick scorer', ->
+      # Two quick wingers with one wuick scorer produces Quick Shoot and Quick Pass SEs.
+      $(".position-winger:nth(0)").html player(QUICK)
+      $(".position-winger:nth(1)").html player(QUICK)
+      $(".position-scorer:nth(0)").html player(QUICK)
+      results = SETI.Engine.start()
+      expect(results.SE.size()).toBe 2
+      expect(results.goals).toBe 0.15018255187499996
+      expect(results.SE.QuickShoot).toBe 0.09250755187499993
+      expect(results.SE.QuickPassing).toBe 0.05767500000000003
+
+  describe 'Head', ->
+    it 'handles two head wingers', ->
+      # Two head wingers produce Head Cross and Head Corner
+      $(".position-winger:nth(0)").html player(HEAD)
+      $(".position-winger:nth(1)").html player(HEAD)
+      results = SETI.Engine.start()
+      expect(results.SE.size()).toBe 2
+      expect(results.goals).toBe 0.12878100000000003
+      expect(results.SE.HeadCross).toBe 0.05327100000000007
+      expect(results.SE.HeadCorner).toBe 0.07550999999999997
