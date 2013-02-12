@@ -79,7 +79,8 @@ class QuickPassing extends SpecialEvent
   family: "Quick"
 
   attendedGoals: (ballPossession, playCreatively) ->
-    specialistsType1 = $(".position-offensive").find(".speciality-quick").length
+    specialistsType1 = $(".position-scorer").find(".player").length
+    --specialistsType1 if ($(".position-scorer").find(".speciality-quick").length is 1 && $(".position-winger").find(".speciality-quick").length is 0)
     super 0.0769, 0.75, specialistsType1, 0, 0, 0, ballPossession, playCreatively
 
   isPossible: ->

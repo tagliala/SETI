@@ -71,8 +71,7 @@ function optionSkills($start = 0, $stop = 20, $select = 6) {
 
     <!-- Le styles -->
     <link href="css/main.css" rel="stylesheet">
-    <link href="http://fonts.googleapis.com/css?family=Signika:400,700" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Squada+One" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Signika:400,700|Squada+One" rel="stylesheet" type="text/css">
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="img/staminia_favicon.png">
