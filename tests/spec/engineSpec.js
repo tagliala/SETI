@@ -69,16 +69,38 @@
         expect(results.SE.QuickShoot).toBe(0.0675);
         return expect(results.SE.QuickPassing).toBe(0.05767500000000003);
       });
-      return it('handles two quick wingers and one quick scorer', function() {
-        var results;
+      it('handles one quick winger and one quick scorer as one quick winger and one normal scorer', function() {
+        var results_1qw_1qs, results_1qw_1s;
+        $(".position-winger:nth(0)").html(player(QUICK));
+        $(".position-scorer:nth(0)").html(player());
+        results_1qw_1s = SETI.Engine.start();
+        expect(results_1qw_1s.SE.size()).toBe(2);
+        expect(results_1qw_1s.goals).toBe(0.07117499999999999);
+        expect(results_1qw_1s.SE.QuickShoot).toBe(0.013499999999999956);
+        expect(results_1qw_1s.SE.QuickPassing).toBe(0.05767500000000003);
+        $(".position-scorer:nth(0)").html(player(QUICK));
+        results_1qw_1qs = SETI.Engine.start();
+        expect(results_1qw_1qs.SE.size()).toBe(results_1qw_1s.SE.size());
+        expect(results_1qw_1qs.goals).toBe(0.13776374999999996);
+        expect(results_1qw_1qs.SE.QuickShoot).toBe(0.08008874999999993);
+        return expect(results_1qw_1qs.SE.QuickPassing).toBe(results_1qw_1s.SE.QuickPassing);
+      });
+      return it('handles two quick wingers and one quick scorer as two quick wingers and one normal scorer', function() {
+        var results_2qw_1qs, results_2qw_1s;
         $(".position-winger:nth(0)").html(player(QUICK));
         $(".position-winger:nth(1)").html(player(QUICK));
+        $(".position-scorer:nth(0)").html(player());
+        results_2qw_1s = SETI.Engine.start();
+        expect(results_2qw_1s.SE.size()).toBe(2);
+        expect(results_2qw_1s.goals).toBe(0.13884134437499995);
+        expect(results_2qw_1s.SE.QuickShoot).toBe(0.026817749999999863);
+        expect(results_2qw_1s.SE.QuickPassing).toBe(0.11202359437500009);
         $(".position-scorer:nth(0)").html(player(QUICK));
-        results = SETI.Engine.start();
-        expect(results.SE.size()).toBe(2);
-        expect(results.goals).toBe(0.15018255187499996);
-        expect(results.SE.QuickShoot).toBe(0.09250755187499993);
-        return expect(results.SE.QuickPassing).toBe(0.05767500000000003);
+        results_2qw_1qs = SETI.Engine.start();
+        expect(results_2qw_1qs.SE.size()).toBe(results_2qw_1s.SE.size());
+        expect(results_2qw_1qs.goals).toBe(0.20453114625000002);
+        expect(results_2qw_1qs.SE.QuickShoot).toBe(0.09250755187499993);
+        return expect(results_2qw_1qs.SE.QuickPassing).toBe(results_2qw_1s.SE.QuickPassing);
       });
     });
     return describe('Head', function() {
