@@ -65,7 +65,7 @@ $seti_version = trim(file_get_contents('VERSION'));
       <meta property="og:site_name" content="Lizardopoli">
     <?php } ?>
 
-    <link rel="stylesheet" href="dist/seti.min.css">
+    <link rel="stylesheet" href="dist/seti.min.css?v=<?php echo filemtime('dist/seti.min.css'); ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="shortcut icon" href="img/staminia_favicon.png">
     <link rel="apple-touch-icon" href="img/ico/apple-touch-icon.png">
@@ -242,28 +242,42 @@ $seti_version = trim(file_get_contents('VERSION'));
         </div>
         <div class="spacer"></div>
 
-        <!-- Staminia CHPP Options Start -->
-        <div class="staminia-button-panel<?php if (!$tryAjax) {
-            echo " hide";
-        } ?>" id="Staminia_Options_CHPP">
-          <b><?= localize("CHPP Mode"); ?>: </b>
-          <div class="btn-group btn-checkbox d-inline-block">
-            <button class="btn btn-status" id="CHPP_Refresh_Data_Status" disabled><i class="bi bi-exclamation-triangle"></i></button>
-            <button class="btn" disabled id="CHPP_Refresh_Data"
-              data-error-text="<?= e(localize("Error")); ?>"
-              data-loading-text="<?= e(localize("Loading...")); ?>"
-              data-success-text="<?= e(localize("Refresh data")); ?>"
-              data-complete-text="<?= e(localize("Refresh data")); ?>"><?= localize("Unauthorized"); ?></button>
-          </div>
-          <div id="CHPP_Results" class="hide shy text-start">
-            <p id="CHPP_Status_Description"></p>
-          </div>
-        </div> <!-- Staminia CHPP Options End -->
-
       </div> <!-- First Column End -->
 
       <!-- Second Column Start -->
       <div class="col-md-4">
+
+        <!-- SETI CHPP Start -->
+        <div class="accordion mb-3<?php if (!$tryAjax) {
+            echo ' d-none';
+        } ?>" id="accordion-chpp">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCHPP" aria-expanded="false" aria-controls="collapseCHPP">
+                <i class="bi bi-star"></i>
+                <span class="ms-2"><?= localize("CHPP Mode"); ?></span>
+              </button>
+            </h2>
+            <div id="collapseCHPP" class="accordion-collapse collapse" data-bs-parent="#accordion-chpp">
+              <div class="accordion-body">
+                <div class="staminia-button-panel" id="Staminia_Options_CHPP">
+                  <div class="btn-group d-flex" role="group">
+                    <button class="btn btn-sm btn-status" id="CHPP_Refresh_Data_Status" disabled><i class="bi bi-exclamation-triangle"></i></button>
+                    <button class="btn btn-sm btn-secondary flex-grow-1 text-start" disabled id="CHPP_Refresh_Data"
+                      data-error-text="<?= e(localize("Error")); ?>"
+                      data-loading-text="<?= e(localize("Loading...")); ?>"
+                      data-success-text="<?= e(localize("Refresh data")); ?>"
+                      data-complete-text="<?= e(localize("Refresh data")); ?>"><?= localize("Unauthorized"); ?></button>
+                  </div>
+                  <div id="CHPP_Results" class="d-none">
+                    <p class="small text-body-secondary m-0 mt-2" id="CHPP_Status_Description"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- SETI CHPP End -->
+
         <div class="noise" id="attendedGoalsContainer">
           <?= localize("Estimated goals:"); ?>
           <strong id="attendedGoals">0.00</strong>
@@ -356,7 +370,7 @@ $seti_version = trim(file_get_contents('VERSION'));
     </script>
   <?php } ?>
 
-  <script src="dist/seti.min.js"></script>
+  <script src="dist/seti.min.js?v=<?php echo filemtime('dist/seti.min.js'); ?>"></script>
   <script>
     document.startAjax = <?php echo $tryAjax ? 'true' : 'false'; ?>;
     <?php echo localizeJavascript(); ?>
