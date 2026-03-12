@@ -21,6 +21,7 @@
 @import "bootstrap/scss/button-group";
 @import "bootstrap/scss/nav";
 @import "bootstrap/scss/navbar";
+@import "bootstrap/scss/accordion";
 @import "bootstrap/scss/alert";
 @import "bootstrap/scss/close";
 @import "bootstrap/scss/modal";
@@ -218,6 +219,10 @@ ul.nav.nav-tabs {
 // ============================================================
 // CHPP status
 // ============================================================
+.btn-group > .btn-status {
+  flex: 0 0 2rem;
+}
+
 #CHPP_Status {
   font-weight: bold;
 }
