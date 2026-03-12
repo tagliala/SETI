@@ -111,7 +111,8 @@ if ($oauthToken != null && $oauthTokenSecret != null) {
         }
 
         $matchOrdersArray = [];
-        $nextMatch = $HT->getSeniorTeam()->getNextMatch();
+        $nextMatches = $HT->getSeniorMatches()->getNextMatches();
+        $nextMatch = $nextMatches->valid() ? $nextMatches->current() : null;
         if ($nextMatch !== null) {
             $orders = $HT->getSeniorMatchOrders($nextMatch->getId());
             if ($orders !== null && $orders->isDataAvailable()) {
