@@ -155,14 +155,14 @@ function fillForm() {
 // CHPP player field helpers
 // ---------------------------------------------------------------------------
 function loginMenuHide() {
-  $("#loginDropdown").addClass("hide");
-  $("#loggedInDropdown").removeClass("hide");
+  $("#loginDropdown").addClass("d-none");
+  $("#loggedInDropdown").removeClass("d-none");
 }
 
 function loginMenuShow() {
   $("#menuLoginTitle").text("CHPP");
-  $("#loggedInDropdown").addClass("hide");
-  $("#loginDropdown").removeClass("hide");
+  $("#loggedInDropdown").addClass("d-none");
+  $("#loginDropdown").removeClass("d-none");
 }
 
 function sort_by(field, reverse, primer) {

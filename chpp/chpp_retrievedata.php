@@ -24,6 +24,48 @@ function resetPermanentToken()
     }
 }
 
+function getTeamDetails($HT, $team)
+{
+    $teamId = $team->getId();
+    $teamArray = [
+        "TeamId"   => $teamId,
+        "TeamName" => $team->getName(),
+    ];
+
+    // Only the fields SETI needs (no skills/stamina/form/experience)
+    $teamPlayers = $HT->getSeniorPlayers($teamId);
+    $teamPlayersArray = [];
+    for ($i = 0; $i < $teamPlayers->getPlayerNumber(); $i++) {
+        $player = $teamPlayers->getPlayer($i);
+        $teamPlayersArray[] = [
+            'PlayerID'       => $player->getId(),
+            'PlayerName'     => $player->getName(),
+            'PlayerNumber'   => $player->getShirtNumber(),
+            'Speciality'     => $player->getSpecialty(),
+            'InjuryLevel'    => $player->getInjury(),
+            'TransferListed' => $player->isTransferListed(),
+            'Cards'          => $player->getCards(),
+        ];
+    }
+    $teamArray["PlayersData"] = $teamPlayersArray;
+
+    // Upcoming matches for this team
+    $nextMatchesArray = [];
+    $nextMatches = $HT->getSeniorMatches($teamId)->getNextMatches();
+    foreach ($nextMatches as $match) {
+        $nextMatchesArray[] = [
+            'MatchId'      => $match->getId(),
+            'Date'         => $match->getDate('Y-m-d H:i'),
+            'HomeTeamName' => $match->getHomeTeamName(),
+            'AwayTeamName' => $match->getAwayTeamName(),
+            'MatchType'    => $match->getType(),
+        ];
+    }
+    $teamArray["NextMatches"] = $nextMatchesArray;
+
+    return $teamArray;
+}
+
 if ($oauthToken == null && ($_COOKIE['permanent'] ?? false)) {
     $oauthToken = $_COOKIE['userToken'] ?? null;
     $oauthTokenSecret = $_COOKIE['userTokenSecret'] ?? null;
@@ -45,97 +87,73 @@ if ($oauthToken != null && $oauthTokenSecret != null) {
             'OAUTH_TOKEN_SECRET' => $oauthTokenSecret,
             'CACHE' => 'session',
         ]));
-        if ($clearCache) {
-            // Prevent flooding
-            if (isset($_SESSION['lastRefreshTime'])) {
-                $lastRefreshTime = $_SESSION['lastRefreshTime'];
-                $currentRefreshRequestTime = time();
-                if ($currentRefreshRequestTime >= ($lastRefreshTime + MIN_REFRESH_SECONDS)) {
+
+        if (isset($_GET['matchId'])) {
+            // Match orders mode — return lineup/orders for a specific match
+            $matchId = intval($_GET['matchId']);
+            $ordersArray = [];
+            if ($matchId > 0) {
+                $orders = $HT->getSeniorMatchOrders($matchId);
+                if ($orders !== null && $orders->isDataAvailable()) {
+                    for ($i = 0; $i < $orders->getPlayerNumber(); $i++) {
+                        $player = $orders->getPlayer($i);
+                        $ordersArray[] = [
+                            'PlayerID'        => $player->getId(),
+                            'Position'        => $player->getRole(),
+                            'IndividualOrder' => $player->getIndividualOrder(),
+                        ];
+                    }
+                }
+            }
+            $returnArray['Status'] = 'OK';
+            $returnArray['MatchOrders'] = $ordersArray;
+        } else {
+            // Teams + players + upcoming matches mode
+            if ($clearCache) {
+                // Prevent flooding
+                if (isset($_SESSION['lastRefreshTime'])) {
+                    $currentRefreshRequestTime = time();
+                    if ($currentRefreshRequestTime >= ($_SESSION['lastRefreshTime'] + MIN_REFRESH_SECONDS)) {
+                        \PHT\Cache\Driver::getInstance()->clear('players');
+                        $_SESSION['lastRefreshTime'] = time();
+                    } else {
+                        $returnArray["RefreshThrottle"] = (MIN_REFRESH_SECONDS - ($currentRefreshRequestTime - $_SESSION['lastRefreshTime']));
+                    }
+                } else {
                     \PHT\Cache\Driver::getInstance()->clear('players');
                     $_SESSION['lastRefreshTime'] = time();
-                } else {
-                    $returnArray["RefreshThrottle"] = (MIN_REFRESH_SECONDS - ($currentRefreshRequestTime - $lastRefreshTime));
                 }
-            } else {
-                \PHT\Cache\Driver::getInstance()->clear('players');
+            }
+
+            $returnArray["Teams"] = [];
+
+            // Primary team
+            $primaryTeam = $HT->getSeniorTeam();
+            if (is_object($primaryTeam)) {
+                $returnArray["Teams"][] = getTeamDetails($HT, $primaryTeam);
+            }
+
+            // Secondary teams (a user can have up to 3)
+            for ($n = 1; $n <= 3; $n++) {
+                $teamConfig = new \PHT\Config\Team();
+                $teamConfig->secondary = true;
+                $teamConfig->number = $n;
+                try {
+                    $secondaryTeam = $HT->getSeniorTeam($teamConfig);
+                    if (!is_object($secondaryTeam)) {
+                        break;
+                    }
+                    $returnArray["Teams"][] = getTeamDetails($HT, $secondaryTeam);
+                } catch (\PHT\Exception\ChppException $e) {
+                    break;
+                }
+            }
+
+            $returnArray["Status"] = "OK";
+
+            if (!isset($_SESSION['lastRefreshTime'])) {
                 $_SESSION['lastRefreshTime'] = time();
             }
-        }
-
-        $teamPlayers = $HT->getSeniorPlayers();
-
-        $teamPlayersArray = [];
-
-        for ($i = 0; $i < $teamPlayers->getPlayerNumber(); $i++) {
-            $player = $teamPlayers->getPlayer($i);
-            $playerArray = [
-                'PlayerID'        => $player->getId(),
-                'PlayerName'      => $player->getName(),
-                'PlayerNumber'    => $player->getShirtNumber(),
-
-                'PlayerForm'      => $player->getForm(),
-                'Experience'      => $player->getExperience(),
-
-                'InjuryLevel'     => $player->getInjury(),
-                'TransferListed'  => $player->isTransferListed(),
-                'Cards'           => $player->getCards(),
-
-                'StaminaSkill'    => $player->getStamina(),
-
-                'KeeperSkill'     => $player->getKeeper(),
-                'PlaymakerSkill'  => $player->getPlaymaker(),
-                'ScorerSkill'     => $player->getScorer(),
-                'PassingSkill'    => $player->getPassing(),
-                'WingerSkill'     => $player->getWinger(),
-                'DefenderSkill'   => $player->getDefender(),
-                'SetPiecesSkill'  => $player->getSetPieces(),
-
-                'Speciality'      => $player->getSpecialty(),
-
-                'Loyalty'         => $player->getLoyalty(),
-                'MotherClubBonus' => $player->hasMotherClubBonus(),
-            ];
-
-            // Main skill
-            $playerArray['MainSkill'] = max(
-                1,
-                $playerArray['KeeperSkill'],
-                $playerArray['DefenderSkill'],
-                $playerArray['PlaymakerSkill'],
-                $playerArray['ScorerSkill'],
-                $playerArray['WingerSkill'],
-                $playerArray['PassingSkill'],
-            );
-
-            array_push($teamPlayersArray, $playerArray);
-        }
-
-        $matchOrdersArray = [];
-        $nextMatches = $HT->getSeniorMatches()->getNextMatches();
-        $nextMatch = $nextMatches->valid() ? $nextMatches->current() : null;
-        if ($nextMatch !== null) {
-            $orders = $HT->getSeniorMatchOrders($nextMatch->getId());
-            if ($orders !== null && $orders->isDataAvailable()) {
-                for ($i = 0; $i < $orders->getPlayersNumber(); $i++) {
-                    $player = $orders->getPlayer($i);
-                    $playerOrdersArray = [
-                        'PlayerID'        => $player->getId(),
-                        'Position'        => $player->getPosition(),
-                        'IndividualOrder' => $player->getIndividualOrder(),
-                    ];
-                    array_push($matchOrdersArray, $playerOrdersArray);
-                }
-            }
-        }
-
-        $returnArray['Status'] = 'OK';
-        $returnArray['TeamName'] = $HT->getSeniorTeam()->getName();
-        $returnArray['PlayersData'] = $teamPlayersArray;
-        $returnArray['MatchOrders'] = $matchOrdersArray;
-
-        // Prevent flooding
-        if (!isset($_SESSION['lastRefreshTime'])) {
-            $_SESSION['lastRefreshTime'] = time();
         }
     } catch (\PHT\Exception\ChppException $e) {
         $conn = new \PHT\Connection(getPhtConfig());

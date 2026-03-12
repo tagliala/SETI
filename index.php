@@ -77,52 +77,57 @@ $seti_version = trim(file_get_contents('VERSION'));
 
   <!-- Navbar
     ================================================== -->
-  <nav class="navbar navbar-expand-lg fixed-top bg-dark navbar-dark">
+  <nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
     <div class="container-fluid">
+      <a class="navbar-brand position-relative" href="#">
+        <i id="staminia-logo"></i><span id="staminia-brand">SETI</span>
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <a class="navbar-brand" href="#">
-        <i id="staminia-logo"></i><span id="staminia-brand">SETI</span>
-      </a>
       <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#helpModal" data-bs-toggle="modal"><?= localize("Help"); ?></a>
+          </li>
+        </ul>
+        <ul class="navbar-nav mb-3 mb-md-0">
           <?php if (defined('CHPP_APP_ID') && CHPP_APP_ID != "") { ?>
             <li class="nav-item dropdown" id="dropdownLogin">
-              <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" id="dropdownLoginToggle" role="button" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" href="#" role="button" aria-expanded="false">
                 <span id="menuLoginTitle"><?= localize("CHPP"); ?></span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" id="loginDropdown">
-                <li>
-                  <div class="px-3 py-2">
-                    <form id="LoginForm" action="chpp/chpp_auth.php" method="post">
-                      <input type="hidden" name="csrf_token" value="<?= e($csrfToken); ?>">
-                      <p><?= localize("Authorize SETI to access your data"); ?></p>
-                      <div class="mb-2">
+              <div class="dropdown-menu dropdown-menu-end">
+                <div id="loginDropdown">
+                  <form id="LoginForm" action="chpp/chpp_auth.php" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrfToken); ?>">
+                    <p class="small text-body-secondary mb-2"><?= localize("Authorize SETI to access your data"); ?></p>
+                    <fieldset>
+                      <div class="d-flex align-items-center justify-content-between gap-2">
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" name="permanent" id="rememberMe" <?php if ($permanent) {
-                              echo 'checked';
-                          } ?>>
-                          <label class="form-check-label" for="rememberMe"><?= localize("Remember me"); ?></label>
+                          <input class="form-check-input" type="checkbox" name="permanent" id="chppRememberMe" <?php if ($permanent) {
+                              echo "checked=\"checked\"";
+                          } ?>/>
+                          <label class="form-check-label" for="chppRememberMe"><?= localize("Remember me"); ?></label>
                         </div>
+                        <button type="submit" class="btn btn-sm btn-primary" id="CHPPLink"><?= localize("Login"); ?></button>
                       </div>
-                      <button type="submit" class="btn btn-primary btn-sm" id="CHPPLink"><?= localize("Login"); ?></button>
-                    </form>
-                    <small><i class="bi bi-exclamation-triangle"></i> <?php echo sprintf(localize("<b>WARNING:</b> by enabling \"%s\", your authorization data are stored in a %s on your computer. <b>DO NOT USE</b> this option if you are using a public computer (i.e. internet points).", false), localize("Remember me"), "<abbr title=\"" . localize("A cookie is used for an origin website to send state information to a user's browser and for the browser to return the state information to the origin site.") . "\">" . localize("cookie") . "</abbr>"); ?></small>
-                  </div>
-                </li>
-              </ul>
-              <ul class="dropdown-menu dropdown-menu-end hide" id="loggedInDropdown">
-                <li>
-                  <a class="dropdown-item" id="CHPP_Revoke_Auth_Link" href="chpp/chpp_revokeauth.php"><?= localize("Revoke authorization"); ?></a>
-                </li>
-              </ul>
+                    </fieldset>
+                  </form>
+                  <div class="alert alert-warning small mb-0 mt-2 p-2"><i class="bi bi-exclamation-triangle"></i> <?php echo sprintf(localize("<b>WARNING:</b> by enabling \"%s\", your authorization data are stored in a %s on your computer.<br><b>DO NOT USE</b> this option on public WiFi or shared devices (e.g. library, hotel).", false), localize("Remember me"), "<abbr title=\"" . localize("A cookie is used for an origin website to send state information to a user's browser and for the browser to return the state information to the origin site.") . "\">" . localize("cookie") . "</abbr>"); ?></div>
+                </div>
+                <ul class="list-unstyled mb-0 d-none" id="loggedInDropdown">
+                  <li>
+                    <a class="dropdown-item" id="CHPP_Revoke_Auth_Link" href="chpp/chpp_revokeauth.php"><?= localize("Revoke authorization"); ?></a>
+                  </li>
+                </ul>
+              </div>
             </li>
           <?php } ?>
           <li class="nav-item dropdown" id="dropdownLanguages">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguagesToggle" role="button" aria-expanded="false">
               <i class="flag-<?= e($lang_array[strtolower(localize("lang"))]["flag"]); ?>"></i>
-              <span class="d-none d-lg-inline">
+              <span class="d-none d-sm-inline">
                 <?= localize($lang_array[strtolower(localize("lang"))]["lang-name"]); ?>
               </span>
             </a>
@@ -134,9 +139,6 @@ $seti_version = trim(file_get_contents('VERSION'));
                   echo "              <li><a class=\"dropdown-item\" href=\"?locale=$key\"><i class=\"flag-" . e($val["flag"]) . "\"></i> " . e($val["lang-name"]) . "</a></li>\n";
               } ?>
             </ul>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#helpModal" data-bs-toggle="modal"><?= localize("Help"); ?></a>
           </li>
         </ul>
       </div>
@@ -271,6 +273,14 @@ $seti_version = trim(file_get_contents('VERSION'));
                   </div>
                   <div id="CHPP_Results" class="d-none">
                     <p class="small text-body-secondary m-0 mt-2" id="CHPP_Status_Description"></p>
+                    <div class="mt-2 d-none" id="CHPP_Team_Row">
+                      <label class="form-label small mb-1"><?= localize("Team"); ?></label>
+                      <select class="form-select form-select-sm" id="CHPP_Team"></select>
+                    </div>
+                    <div class="mt-2" id="CHPP_Match_Row">
+                      <label class="form-label small mb-1"><?= localize("Match"); ?></label>
+                      <select class="form-select form-select-sm" id="CHPP_Match"></select>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -47,8 +47,7 @@
 // Body — noise texture
 // ============================================================
 body {
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAD1BMVEX9/f3z8/P4+Pjt7e35+fkTdnCTAAAAhklEQVR42o3RQQ7EIBADwbHJ/9+8sawIWUHrcGGg6wQzA5C411ozmvYNOdMBkCQz2YEOSXbW3oFTEmfRb+BNFK97iXRAHomBVgH/yMxaQAfkmTh/ARrfxFlTB75IsjPQAeC0SeTpYF97zgx08GR/TmbtHTgbZPbegbK/95Q7eF7CJLNPFfwAA/4E6cWnJloAAAAASUVORK5CYII=');
-  background-size: 16px 16px;
+  /* Use Bootstrap default background */
   padding-top: 56px;
 }
 
@@ -58,8 +57,6 @@ body {
 h1 {
   font-size: 32px;
   line-height: 36px;
-  font-family: "Squada One", cursive;
-  font-weight: normal;
   text-shadow: 1px 1px 0 white, 2px 2px 1px rgba(0, 0, 0, .2);
 }
 
@@ -71,10 +68,7 @@ h1 > small {
 // Navbar
 // ============================================================
 .navbar .navbar-brand {
-  font-family: "Squada One", cursive;
-  font-size: 26px;
-  font-weight: normal;
-  text-shadow: 1px 1px 0 black, 2px 2px 0 rgba(255, 255, 255, 0.1);
+  padding-left: 60px;
 }
 
 .btn i.bi {
@@ -92,57 +86,26 @@ h1 > small {
 // Login dropdown
 // ============================================================
 #loginDropdown {
-  width: 240px;
-  padding: 15px;
-  color: black;
-}
-
-#loginDropdown fieldset {
-  display: block;
-  text-align: right;
-}
-
-#loginDropdown label.rememberme {
-  display: block;
-  float: left;
-  margin: 0;
-  line-height: 28px;
-
-  &:hover {
-    cursor: pointer;
-  }
-}
-
-#loginDropdown input[type="checkbox"] {
-  display: inline-block;
-  vertical-align: baseline;
-}
-
-#loginDropdown button {
-  margin: 0;
+  width: 280px;
+  padding: $spacer;
 }
 
 #loginDropdown small {
-  font-size: smaller;
+  font-size: $small-font-size;
 }
 
 // ============================================================
 // Logo & sprites
 // ============================================================
 #staminia-logo {
-  display: inline-block;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
   height: 27px;
   width: 54px;
-  margin-top: 5px;
   background: url("../img/logo-4BE5C442.png") no-repeat;
   background-size: 54px 27px;
-}
-
-#staminia-brand {
-  position: relative;
-  display: inline-block;
-  top: -5px;
-  left: 5px;
 }
 
 #imgCHPPLogo {
