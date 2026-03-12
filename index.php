@@ -66,6 +66,7 @@ $seti_version = trim(file_get_contents('VERSION'));
     <?php } ?>
 
     <link rel="stylesheet" href="dist/seti.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="shortcut icon" href="img/staminia_favicon.png">
     <link rel="apple-touch-icon" href="img/ico/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="72x72" href="img/ico/apple-touch-icon-72x72.png">

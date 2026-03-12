@@ -1,4 +1,5 @@
 // Entry point — imports guarantee bundling order.
+import "jquery-validation";
 import "./vendor/jquery.drag-drop.plugin.js";
 import "./engine.js";
 import "./plugins.js";

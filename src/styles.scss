@@ -30,8 +30,7 @@
 @import "bootstrap/scss/helpers";
 @import "bootstrap/scss/utilities/api";
 
-// Bootstrap Icons
-@import "bootstrap-icons/font/bootstrap-icons.css";
+// Bootstrap Icons loaded via CDN in index.php
 
 // Vendored flags
 @import "../css/flags.css";

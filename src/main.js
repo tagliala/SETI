@@ -50,6 +50,7 @@ function format(source, params) {
   });
   return source;
 }
+SETI.format = format;
 
 function number_format(number = "", decimals = 0, dec_point = ".", thousands_sep = ",") {
   number = String(number).replace(/[^0-9+\-Ee.]/g, "");
