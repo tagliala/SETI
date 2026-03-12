@@ -90,7 +90,7 @@ if ($oauthToken != null && $oauthTokenSecret != null) {
                 'DefenderSkill'   => $player->getDefender(),
                 'SetPiecesSkill'  => $player->getSetPieces(),
 
-                'Speciality'      => $player->getSpeciality(),
+                'Speciality'      => $player->getSpecialty(),
 
                 'Loyalty'         => $player->getLoyalty(),
                 'MotherClubBonus' => $player->hasMotherClubBonus(),
