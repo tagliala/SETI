@@ -1,0 +1,586 @@
+// SETI — SCSS bundle entry point
+// Import Bootstrap SCSS source (variables, mixins, then components)
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// Layout & components
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+
+// Helpers & utilities
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";
+
+// Bootstrap Icons
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+// Vendored flags
+@import "../css/flags.css";
+
+// ============================================================
+// Bootstrap 2 compatibility: .hide utility
+// ============================================================
+.hide {
+  display: none !important;
+}
+
+// ============================================================
+// Body — noise texture
+// ============================================================
+body {
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAD1BMVEX9/f3z8/P4+Pjt7e35+fkTdnCTAAAAhklEQVR42o3RQQ7EIBADwbHJ/9+8sawIWUHrcGGg6wQzA5C411ozmvYNOdMBkCQz2YEOSXbW3oFTEmfRb+BNFK97iXRAHomBVgH/yMxaQAfkmTh/ARrfxFlTB75IsjPQAeC0SeTpYF97zgx08GR/TmbtHTgbZPbegbK/95Q7eF7CJLNPFfwAA/4E6cWnJloAAAAASUVORK5CYII=');
+  background-size: 16px 16px;
+  padding-top: 56px;
+}
+
+// ============================================================
+// Typography
+// ============================================================
+h1 {
+  font-size: 32px;
+  line-height: 36px;
+  font-family: "Squada One", cursive;
+  font-weight: normal;
+  text-shadow: 1px 1px 0 white, 2px 2px 1px rgba(0, 0, 0, .2);
+}
+
+h1 > small {
+  color: #277f31;
+}
+
+// ============================================================
+// Navbar
+// ============================================================
+.navbar .navbar-brand {
+  font-family: "Squada One", cursive;
+  font-size: 26px;
+  font-weight: normal;
+  text-shadow: 1px 1px 0 black, 2px 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn i.bi {
+  position: relative;
+  top: 1px;
+  line-height: 15px !important;
+  font-size: 16px;
+}
+
+.navbar li.hide {
+  display: none;
+}
+
+// ============================================================
+// Login dropdown
+// ============================================================
+#loginDropdown {
+  width: 240px;
+  padding: 15px;
+  color: black;
+}
+
+#loginDropdown fieldset {
+  display: block;
+  text-align: right;
+}
+
+#loginDropdown label.rememberme {
+  display: block;
+  float: left;
+  margin: 0;
+  line-height: 28px;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+#loginDropdown input[type="checkbox"] {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+#loginDropdown button {
+  margin: 0;
+}
+
+#loginDropdown small {
+  font-size: smaller;
+}
+
+// ============================================================
+// Logo & sprites
+// ============================================================
+#staminia-logo {
+  display: inline-block;
+  height: 27px;
+  width: 54px;
+  margin-top: 5px;
+  background: url("../img/logo-4BE5C442.png") no-repeat;
+  background-size: 54px 27px;
+}
+
+#staminia-brand {
+  position: relative;
+  display: inline-block;
+  top: -5px;
+  left: 5px;
+}
+
+#imgCHPPLogo {
+  height: 50px;
+  width: 87px;
+  background: url("../img/css_sprite.png") no-repeat -65px 0;
+}
+
+#imgValidHTML {
+  background: url("../img/css_sprite.png") no-repeat -153px 0;
+}
+
+#imgHTML5 {
+  height: 32px;
+  width: 30px;
+  background: url("../img/css_sprite.png") no-repeat -68px -52px;
+}
+
+#imgCSS3 {
+  height: 22px;
+  width: 24px;
+  background: url("../img/css_sprite.png") no-repeat -98px -52px;
+}
+
+#imgMadeInItaly {
+  height: 15px;
+  width: 80px;
+  background: url("../img/css_sprite.png") no-repeat -153px -52px;
+}
+
+// ============================================================
+// Clippy — native clipboard API replacement retains element
+// ============================================================
+.clippy {
+  height: 14px;
+  width: 14px;
+  display: inline-block;
+  background: url("../img/css_sprite.png") no-repeat -206px -16px;
+  cursor: pointer;
+}
+
+// ============================================================
+// Alerts / generated link
+// ============================================================
+#generatedLinkBody {
+  overflow: hidden;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+// ============================================================
+// Player option states
+// ============================================================
+option.isTransferListed { color: #00b400; }
+option.isBruised        { color: #640000; }
+option.isInjured        { color: #c80000; }
+option.isSuspended      { color: #c81414; }
+
+// ============================================================
+// Tabs
+// ============================================================
+.nav-tabs > li.credits {
+  float: right;
+}
+
+.nav-tabs > li.credits > a {
+  margin-right: 0;
+}
+
+ul.nav.nav-tabs {
+  background: #f5f5f5;
+}
+
+// ============================================================
+// CHPP status
+// ============================================================
+#CHPP_Status {
+  font-weight: bold;
+}
+
+.btn-warning {
+  color: black !important;
+}
+
+// Progress button (animated stripes while AJAX is in flight)
+.btn-progress:disabled {
+  color: white;
+  background-color: #149bdf;
+  background-image: linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+  animation: progress-bar-stripes 2s linear infinite;
+}
+
+// ============================================================
+// Utility classes
+// ============================================================
+.align-left    { text-align: left !important; }
+.align-center  { text-align: center !important; }
+.align-right   { text-align: right !important; }
+.align-justify { text-align: justify !important; }
+.width-auto    { width: auto !important; }
+.inline-block  { display: inline-block; }
+.min-width     { width: 1px; }
+
+.legend-like {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 18px;
+  font-weight: normal;
+}
+
+span.minutes {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 24px;
+  line-height: 26px;
+}
+
+// ============================================================
+// Table stripe
+// ============================================================
+.table tbody tr:not(:hover) td.stripe,
+.table tbody tr:not(:hover) th.stripe {
+  background-color: #f9f9f9;
+}
+
+// ============================================================
+// Footer
+// ============================================================
+footer {
+  color: #555;
+  text-shadow: 0 1px 0 white;
+
+  a { color: #999; }
+  a:hover { color: #555; }
+
+  li {
+    display: inline-block;
+
+    & + li {
+      margin-left: 5px;
+      border-left: 1px solid #ddd;
+      padding-left: 5px;
+    }
+  }
+}
+
+// ============================================================
+// Tabs credits
+// ============================================================
+#tabCredits > p,
+#tabCredits > blockquote {
+  margin-bottom: 18px;
+}
+
+// ============================================================
+// Soccer field — noise texture overlay
+// ============================================================
+.noise {
+  background-image: url('data:image/png;base64,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');
+  background-size: 20px 20px;
+}
+
+// ============================================================
+// Soccer field — layout
+// ============================================================
+.soccer-field-with-lines {
+  position: relative;
+  background-color: #649733;
+  background-image: inherit;
+  display: block;
+  overflow: hidden;
+}
+
+.soccer-field-lines {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: url('../img/soccer-field.svg') no-repeat top;
+  background-size: 100% auto;
+}
+
+.soccer-field {
+  position: relative;
+  padding: 20px 10px;
+}
+
+.draggablePlayers {
+  position: relative;
+  border-top: 3px solid rgba(255, 255, 255, .85);
+  padding: 20px 10px;
+  background-color: #a0493f;
+  background-image: inherit;
+}
+
+.players-row {
+  height: 60px;
+}
+
+.soccer-field-keeper {
+  margin-bottom: 20px;
+}
+
+.players-row + .players-row {
+  margin-top: 20px;
+}
+
+li.player-position,
+li.player-empty-position {
+  display: block;
+  float: left;
+  width: 20%;
+}
+
+.player-position,
+.player-empty-position,
+.player-position > div {
+  display: block;
+  height: 60px;
+}
+
+.player-position > div {
+  margin: 0 5px;
+  background: rgba(0, 0, 0, .25);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, .45);
+  border: 1px solid rgba(0, 0, 0, .20);
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+.highlight > div:not(.player) {
+  border: 2px solid rgba(255, 255, 200, .50);
+}
+
+.droppableHover:after {
+  display: block;
+  position: relative;
+  content: "";
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.clickable:hover > div,
+.droppableHover:after {
+  background-color: rgba(255, 255, 200, 0.3) !important;
+}
+
+.pendingDrop {
+  opacity: 0.50;
+}
+
+// ============================================================
+// Player speciality images
+// ============================================================
+.player-position > .player {
+  position: relative;
+  background-repeat: no-repeat;
+  background-color: rgba(0, 0, 0, .60);
+  background-image: url('../img/test5.jpg');
+  border: none;
+  background-position: center top;
+  background-size: auto 60px;
+}
+
+.player-position > .speciality-technical {
+  background-image: url('../img/test.jpg');
+  background-position: left bottom;
+}
+
+.player-position > .speciality-head {
+  background-image: url('../img/test2.jpg');
+  background-position: right center;
+}
+
+.player-position > .speciality-quick {
+  background-image: url('../img/test3.jpg');
+  background-position: center bottom;
+}
+
+.player-position > .speciality-unpredictable {
+  background-image: url('../img/test4.jpg');
+  background-position: left bottom;
+}
+
+// ============================================================
+// Drag-drop states
+// ============================================================
+.whileDragging {
+  z-index: 2;
+  cursor: move;
+}
+
+.clickable:hover {
+  cursor: crosshair !important;
+}
+
+.player-description {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0 4px 1px;
+  line-height: 14px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  text-overflow: ellipsis;
+  color: white;
+  background: rgba(0, 0, 0, .6);
+  border-top: 1px solid rgba(0, 0, 0, .1);
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  box-sizing: border-box;
+}
+
+.player-description > span {
+  width: 100%;
+  white-space: pre;
+  text-shadow: 0 1px 0 black;
+}
+
+.no-text-select {
+  user-select: none;
+}
+
+.soccer-field form {
+  text-align: center;
+}
+
+.draggablePlayers ul {
+  margin-bottom: 10px;
+}
+
+.soccer-field form label,
+.draggablePlayers p {
+  line-height: 14px;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
+}
+
+.soccer-field form select {
+  padding: 0;
+  height: 22px;
+  line-height: 22px;
+  font-size: 12px;
+}
+
+.draggablePlayers p {
+  line-height: 15px;
+  font-size: 11px;
+  margin-bottom: 0;
+}
+
+// ============================================================
+// Trash icon
+// ============================================================
+.trash-players {
+  position: relative;
+  top: 11px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.trash-players .bi-trash {
+  font-size: 42px;
+  line-height: 44px;
+  color: white;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.trash-players:hover {
+  color: rgba(255, 255, 200, 1) !important;
+}
+
+// ============================================================
+// Soccer field wrapper
+// ============================================================
+.soccer-field-wrapper {
+  margin-bottom: 10px;
+  border: 1px solid #333;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .35);
+}
+
+// ============================================================
+// Attended goals (results) container
+// ============================================================
+#attendedGoalsContainer {
+  display: block;
+  width: 100%;
+  margin-bottom: 18px;
+  border: 1px solid #1a6a7a;
+  padding: 8px 4px;
+  text-align: center;
+  line-height: 24px;
+  font-size: 20px;
+  background-color: #207098;
+  color: white;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+  box-sizing: border-box;
+  transition: all .4s linear;
+}
+
+#attendedGoalsContainer.success {
+  border: 1px solid #486c2a;
+  background-color: #477f31;
+}
+
+#attendedGoalsContainer.danger {
+  border: 1px solid #79303c;
+  background-color: #843434;
+}
+
+// ============================================================
+// SE results tables
+// ============================================================
+#se-tables-container table {
+  background: white;
+  margin-bottom: 9px;
+  border: 1px solid rgba(0, 0, 0, .25);
+}
+
+#se-tables-container tr th {
+  background: #eee;
+}
+
+// ============================================================
+// Misc
+// ============================================================
+a[data-bs-toggle=modal] {
+  outline: none;
+}
+
+::selection {
+  text-shadow: none;
+  background: #08c;
+  color: #fff;
+}

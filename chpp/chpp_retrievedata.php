@@ -1,170 +1,165 @@
 <?php
-ob_start("ob_gzhandler");
+
+error_reporting(E_ALL & ~E_DEPRECATED);
+ob_start('ob_gzhandler');
 header('Content-type: application/json');
-include '../lib/PHT/PHT.php';
-include 'config.php';
+require __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/config.php';
 
 session_start();
-$returnArray = array();
+$returnArray = [];
 
-$HT = $_SESSION['HT'];
+$oauthToken = $_SESSION['oauthToken'] ?? null;
+$oauthTokenSecret = $_SESSION['oauthTokenSecret'] ?? null;
 
 $clearCache = isset($_GET['refresh']);
 
-if (($HT == null) && ($_COOKIE['permanent'])) {
-  $userToken = $_COOKIE['userToken'];
-  $userTokenSecret = $_COOKIE['userTokenSecret'];
-  try
-  {
-   /*
-   You don't need to login to Hattrick, you cas use
-   user token (if you saved it) to retrieve xml
-   Create PHT instance (no need to set a callback url)
-   set user token and token secret, then request xml, it's easy :)
-   */
-   $HT = new CHPPConnection(APP_CONSUMERKEY, APP_CONSUMERSECRET);
-   $HT->setOauthToken($userToken);
-   $HT->setOauthTokenSecret($userTokenSecret);
-   $_SESSION['HT'] = $HT;
-  }
-  catch(HTError $e)
-  {
-   setcookie('permanent'      , '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-   setcookie('userToken'      , '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-   setcookie('userTokenSecret', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-   $returnArray["Status"] = "Error";
-   $returnArray["ErrorCode"] = "InvalidToken";
-  }
+function resetPermanentToken()
+{
+    if ($_COOKIE['permanent'] ?? false) {
+        $clear = array_merge(COOKIE_OPTIONS, ['expires' => time() - 3600]);
+        setcookie('permanent', '', $clear);
+        setcookie('userToken', '', $clear);
+        setcookie('userTokenSecret', '', $clear);
+    }
 }
 
-if ($HT != null) {
-  try
-  {
-   if ($clearCache) {
-   
-    //prevent flooding
-    if (isset($_SESSION['lastRefreshTime'])) {
-      $lastRefreshTime = $_SESSION['lastRefreshTime'];
-      $currentRefreshRequestTime = time();
-      if ($currentRefreshRequestTime >= ($lastRefreshTime + MIN_REFRESH_SECONDS)) {
-        $HT->clearTeamsPlayers();
-        $_SESSION['lastRefreshTime'] = time();
-      }
-      else {
-        $returnArray["RefreshThrottle"] = (MIN_REFRESH_SECONDS - ($currentRefreshRequestTime - $lastRefreshTime));
-      }
+if ($oauthToken == null && ($_COOKIE['permanent'] ?? false)) {
+    $oauthToken = $_COOKIE['userToken'] ?? null;
+    $oauthTokenSecret = $_COOKIE['userTokenSecret'] ?? null;
+
+    if ($oauthToken && $oauthTokenSecret) {
+        $_SESSION['oauthToken'] = $oauthToken;
+        $_SESSION['oauthTokenSecret'] = $oauthTokenSecret;
+    } else {
+        $returnArray['Status'] = 'Error';
+        $returnArray['ErrorCode'] = 'InvalidToken';
+        resetPermanentToken();
     }
-    else {
-      $HT->clearTeamsPlayers();
-      $_SESSION['lastRefreshTime'] = time();
-    }  
-    
-   }
-
-   $teamPlayers = $HT->getTeamPlayers();
-
-   $teamPlayersArray = array();
-
-   for($i=1, $l = $teamPlayers->getNumberPlayers(); $i<= $l; ++$i)
-   {
-     $player = $teamPlayers->getPlayer($i);
-     $playerArray = array(
-        "PlayerID" => $player->getId(),
-        "PlayerName" => $player->getName(),
-        "PlayerNumber" => $player->getShirtNumber(),
-
-        "PlayerForm" => $player->getForm(),
-        "Experience" => $player->getExperience(),
-
-        "InjuryLevel" => $player->getInjury(),
-        "TransferListed" => $player->isTransferListed(),
-        "Cards" => $player->getCards(),
-
-        "StaminaSkill" => $player->getStamina(),
-
-        "KeeperSkill" => $player->getKeeper(),
-        "PlaymakerSkill" => $player->getPlaymaker(),
-        "ScorerSkill" => $player->getScorer(),
-        "PassingSkill" => $player->getPassing(),
-        "WingerSkill" => $player->getWinger(),
-        "DefenderSkill" => $player->getDefender(),
-        "SetPiecesSkill" => $player->getSetPieces(),
-
-        "Speciality" => $player->getSpeciality(),
-
-        "Loyalty" => $player->getLoyalty(),
-        "MotherClubBonus" => $player->hasMotherClubBonus()
-      );
-
-      //Main skill
-      {
-        $max = 1;
-        if ($playerArray["PlaymakerSkill"] > $max) 
-          $max = $playerArray["PlaymakerSkill"];
-        if ($playerArray["KeeperSkill"] > $max)
-          $max = $playerArray["KeeperSkill"];
-        if ($playerArray["DefenderSkill"] > $max)
-          $max = $playerArray["DefenderSkill"];
-        if ($playerArray["ScorerSkill"] > $max)
-          $max = $playerArray["ScorerSkill"];
-        if ($playerArray["WingerSkill"] > $max)
-          $max = $playerArray["WingerSkill"];            
-        if ($playerArray["PassingSkill"] > $max)
-          $max = $playerArray["PassingSkill"];            
-        $playerArray["MainSkill"] = $max;
-      }
-
-      array_push($teamPlayersArray, $playerArray);
-
-    }
-
-    $matchOrdersArray = array();
-    $HT-> clearSeniorMatchesOrders();
-    $orders = $HT->getSeniorMatchOrders($HT->getSeniorTeamMatches()->getNextMatch()->getId());
-    if($orders->isDataAvailable())
-    {
-      for($i=1, $l=$orders->getPlayersNumber(); $i<=$l; ++$i)
-      {
-        $player = $orders->getPlayer($i);
-        $playerOrdersArray = array(
-          "PlayerID" => $player->getId(),
-          "Position" => $player->getPosition(),
-          "IndividualOrder" => $player->getIndividualOrder()
-        );
-        array_push($matchOrdersArray, $playerOrdersArray);
-      }
-    }
-
-    $returnArray["Status"] = "OK";
-    $returnArray["TeamName"] = $teamPlayers->getTeamName();
-    $returnArray["PlayersData"] = $teamPlayersArray;
-    $returnArray["MatchOrders"] = $matchOrdersArray;
-
-    //prevent flooding
-    if (!isset($_SESSION['lastRefreshTime'])) {
-     $_SESSION['lastRefreshTime'] = time();
-    }
-  }
-  catch(HTError $e)
-  {
-   $HTCheckToken = $HT->checkToken();
-   if ($HTCheckToken->isValid()) {
-    $returnArray["Status"] = "Error";
-    $returnArray["ErrorCode"] = $e->getMessage();
-   } else {
-    $returnArray["Status"] = "Error";
-    $returnArray["ErrorCode"] = "InvalidToken";
-    if ($_COOKIE['permanent']) {
-      setcookie('permanent'      , '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie('userToken'      , '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-      setcookie('userTokenSecret', '', time() - 3600, COOKIE_PATH, COOKIE_DOMAIN);
-    }
-   }
-  }
 }
-else {
-  $returnArray["Status"] = "Error";
-  $returnArray["ErrorCode"] = "UnknownError";
+
+if ($oauthToken != null && $oauthTokenSecret != null) {
+    try {
+        $HT = new \PHT\PHT(getPhtConfig([
+            'OAUTH_TOKEN' => $oauthToken,
+            'OAUTH_TOKEN_SECRET' => $oauthTokenSecret,
+            'CACHE' => 'session',
+        ]));
+        if ($clearCache) {
+            // Prevent flooding
+            if (isset($_SESSION['lastRefreshTime'])) {
+                $lastRefreshTime = $_SESSION['lastRefreshTime'];
+                $currentRefreshRequestTime = time();
+                if ($currentRefreshRequestTime >= ($lastRefreshTime + MIN_REFRESH_SECONDS)) {
+                    \PHT\Cache\Driver::getInstance()->clear('players');
+                    $_SESSION['lastRefreshTime'] = time();
+                } else {
+                    $returnArray["RefreshThrottle"] = (MIN_REFRESH_SECONDS - ($currentRefreshRequestTime - $lastRefreshTime));
+                }
+            } else {
+                \PHT\Cache\Driver::getInstance()->clear('players');
+                $_SESSION['lastRefreshTime'] = time();
+            }
+        }
+
+        $teamPlayers = $HT->getSeniorPlayers();
+
+        $teamPlayersArray = [];
+
+        for ($i = 0; $i < $teamPlayers->getPlayerNumber(); $i++) {
+            $player = $teamPlayers->getPlayer($i);
+            $playerArray = [
+                'PlayerID'        => $player->getId(),
+                'PlayerName'      => $player->getName(),
+                'PlayerNumber'    => $player->getShirtNumber(),
+
+                'PlayerForm'      => $player->getForm(),
+                'Experience'      => $player->getExperience(),
+
+                'InjuryLevel'     => $player->getInjury(),
+                'TransferListed'  => $player->isTransferListed(),
+                'Cards'           => $player->getCards(),
+
+                'StaminaSkill'    => $player->getStamina(),
+
+                'KeeperSkill'     => $player->getKeeper(),
+                'PlaymakerSkill'  => $player->getPlaymaker(),
+                'ScorerSkill'     => $player->getScorer(),
+                'PassingSkill'    => $player->getPassing(),
+                'WingerSkill'     => $player->getWinger(),
+                'DefenderSkill'   => $player->getDefender(),
+                'SetPiecesSkill'  => $player->getSetPieces(),
+
+                'Speciality'      => $player->getSpeciality(),
+
+                'Loyalty'         => $player->getLoyalty(),
+                'MotherClubBonus' => $player->hasMotherClubBonus(),
+            ];
+
+            // Main skill
+            $playerArray['MainSkill'] = max(
+                1,
+                $playerArray['KeeperSkill'],
+                $playerArray['DefenderSkill'],
+                $playerArray['PlaymakerSkill'],
+                $playerArray['ScorerSkill'],
+                $playerArray['WingerSkill'],
+                $playerArray['PassingSkill'],
+            );
+
+            array_push($teamPlayersArray, $playerArray);
+        }
+
+        $matchOrdersArray = [];
+        $nextMatch = $HT->getSeniorTeam()->getNextMatch();
+        if ($nextMatch !== null) {
+            $orders = $HT->getSeniorMatchOrders($nextMatch->getId());
+            if ($orders !== null && $orders->isDataAvailable()) {
+                for ($i = 0; $i < $orders->getPlayersNumber(); $i++) {
+                    $player = $orders->getPlayer($i);
+                    $playerOrdersArray = [
+                        'PlayerID'        => $player->getId(),
+                        'Position'        => $player->getPosition(),
+                        'IndividualOrder' => $player->getIndividualOrder(),
+                    ];
+                    array_push($matchOrdersArray, $playerOrdersArray);
+                }
+            }
+        }
+
+        $returnArray['Status'] = 'OK';
+        $returnArray['TeamName'] = $HT->getSeniorTeam()->getName();
+        $returnArray['PlayersData'] = $teamPlayersArray;
+        $returnArray['MatchOrders'] = $matchOrdersArray;
+
+        // Prevent flooding
+        if (!isset($_SESSION['lastRefreshTime'])) {
+            $_SESSION['lastRefreshTime'] = time();
+        }
+    } catch (\PHT\Exception\ChppException $e) {
+        $conn = new \PHT\Connection(getPhtConfig());
+        try {
+            $tokenCheck = $conn->checkChppAccess($oauthToken, $oauthTokenSecret);
+            if ($tokenCheck->isValid()) {
+                $returnArray['Status'] = 'Error';
+                $returnArray['ErrorCode'] = $e->getMessage();
+            } else {
+                $returnArray['Status'] = 'Error';
+                $returnArray['ErrorCode'] = 'InvalidToken';
+                resetPermanentToken();
+                unset($_SESSION['oauthToken']);
+                unset($_SESSION['oauthTokenSecret']);
+            }
+        } catch (\Exception $ex) {
+            $returnArray['Status'] = 'Error';
+            $returnArray['ErrorCode'] = 'InvalidToken';
+            resetPermanentToken();
+            unset($_SESSION['oauthToken']);
+            unset($_SESSION['oauthTokenSecret']);
+        }
+    }
+} else {
+    $returnArray['Status'] = 'Error';
+    $returnArray['ErrorCode'] = 'UnknownError';
 }
 echo json_encode($returnArray);
-?>

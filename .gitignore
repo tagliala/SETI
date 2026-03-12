@@ -15,3 +15,13 @@ intermediate
 publish
 chpp/config.php
 config.php
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+
+# PHP CS Fixer cache
+.php-cs-fixer.cache
