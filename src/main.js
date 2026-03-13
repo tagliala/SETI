@@ -165,120 +165,152 @@ function loginMenuShow() {
   $("#loginDropdown").removeClass("d-none");
 }
 
-function sort_by(field, reverse, primer) {
-  const sign = reverse ? -1 : 1;
-  return function (a, b) {
-    let av = a[field];
-    let bv = b[field];
-    if (primer) {
-      av = primer(av);
-      bv = primer(bv);
-      if (isNaN(av)) av = Infinity;
-      if (isNaN(bv)) bv = Infinity;
+// ---------------------------------------------------------------------------
+// CHPP data fetch & UI setup
+// ---------------------------------------------------------------------------
+async function fetchCHPP(refresh = false) {
+  const url = refresh ? "chpp/chpp_retrievedata.php?refresh" : "chpp/chpp_retrievedata.php";
+
+  buttonLoading($("#CHPP_Refresh_Data"));
+  $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-clock text-white").attr("title", "");
+  $("#CHPP_Refresh_Data_Status").attr("disabled", "disabled");
+  $("#CHPP_Refresh_Data_Status").removeClass("btn-danger btn-success btn-warning").addClass("btn-progress");
+  document.getElementById("CHPP_Results").classList.add("d-none");
+  $("#CHPP_Status_Description").html("");
+
+  let jsonObject;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) throw new Error("network");
+    jsonObject = await response.json();
+  } catch (err) {
+    let error_message, description_message;
+    if (err.name === "AbortError") {
+      error_message = SETI.messages.error_timeout;
+      description_message = "";
+    } else {
+      error_message = SETI.messages.error_unknown;
+      description_message = SETI.messages.retry_to_authorize;
     }
-    if (av < bv) return sign * -1;
-    if (av > bv) return sign * 1;
-    return 0;
-  };
-}
-
-function sortCHPPPlayerFields() {
-  const PlayersData = SETI.PlayersData;
-  if (!PlayersData) return;
-
-  let field = "PlayerNumber";
-  let reverse = false;
-  let primer = parseInt;
-
-  switch ($(`${FORM_ID} select[id=CHPP_Players_SortBy]`).val()) {
-    case "ShirtNumber":  field = "PlayerNumber"; break;
-    case "Name":         field = "PlayerName"; primer = undefined; break;
-    case "Form":         field = "PlayerForm"; reverse = true; break;
-    case "Stamina":      field = "StaminaSkill"; reverse = true; break;
-    case "Keeper":       field = "KeeperSkill"; reverse = true; break;
-    case "Playmaking":   field = "PlaymakerSkill"; reverse = true; break;
-    case "Passing":      field = "PassingSkill"; reverse = true; break;
-    case "Winger":       field = "WingerSkill"; reverse = true; break;
-    case "Defending":    field = "DefenderSkill"; reverse = true; break;
-    case "Scoring":      field = "ScorerSkill"; reverse = true; break;
-    case "SetPieces":    field = "SetPiecesSkill"; reverse = true; break;
-    case "Experience":   field = "Experience"; reverse = true; break;
-    case "Loyalty":      field = "Loyalty"; reverse = true; break;
+    $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
+    $("#CHPP_Refresh_Data_Status").removeClass("btn-success btn-warning").addClass("btn-danger");
+    $("#CHPP_Status_Description").html(`${error_message}<br/>${description_message}`);
+    loginMenuShow();
+    $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
+    $("#CHPP_Refresh_Data_Status").removeAttr("disabled");
+    document.getElementById("CHPP_Results").classList.remove("d-none");
+    buttonComplete($("#CHPP_Refresh_Data"));
+    return;
   }
 
-  PlayersData.sort(sort_by(field, reverse, primer));
-}
+  if (jsonObject.Status === "OK") {
+    try {
+      SETI.Teams = jsonObject.Teams;
+      setupCHPPTeamFields();
 
-function updateCHPPPlayerFields() {
-  const PlayersData = SETI.PlayersData;
-  if (!PlayersData) return;
-
-  sortCHPPPlayerFields();
-
-  const select = $(document.createElement("select"));
-  for (let index = 0; index < PlayersData.length; index++) {
-    const player = PlayersData[index];
-    const optionElement = $(document.createElement("option"));
-    if (Number(player.InjuryLevel) === 0) optionElement.addClass("isBruised");
-    if (Number(player.InjuryLevel) > 0) optionElement.addClass("isInjured");
-    if (Number(player.Cards) >= 3) optionElement.addClass("isSuspended");
-    if (player.TransferListed) optionElement.addClass("isTransferListed");
-    optionElement.attr("value", index);
-    const number = player.PlayerNumber != null ? player.PlayerNumber + "." : "";
-    const mc = player.MotherClubBonus ? "\u2665" : "";
-    optionElement.text(`${number} ${player.PlayerName} ${mc}`);
-    select.append(optionElement);
+      if (jsonObject.RefreshThrottle) {
+        $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-exclamation-triangle").attr("title", SETI.messages.status_warning);
+        $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-danger btn-success").addClass("btn-warning");
+        $("#CHPP_Status_Description").text(SETI.messages.refresh_throttle(jsonObject.RefreshThrottle));
+      } else {
+        $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-check-lg text-white").attr("title", SETI.messages.status_ok);
+        $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-danger btn-warning").addClass("btn-success");
+      }
+      $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("success-text"));
+    } catch (error) {
+      console.error("[SETI CHPP] Error processing OK response:", error);
+      $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
+      $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-success btn-warning").addClass("btn-danger");
+      loginMenuShow();
+      $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
+      $("#CHPP_Status_Description").html(`${SETI.messages.error_unknown}.<br/>${SETI.messages.retry_to_authorize}.`);
+    }
+  } else if (jsonObject.Status === "Error") {
+    let error_message, description_message;
+    if (jsonObject.ErrorCode === "InvalidToken") {
+      error_message = SETI.messages.error_invalid_token;
+      description_message = SETI.messages.retry_to_authorize;
+    } else {
+      error_message = SETI.messages.error_unknown;
+      description_message = SETI.messages.retry_to_authorize;
+    }
+    $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
+    $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-success btn-warning").addClass("btn-danger");
+    $("#CHPP_Status_Description").html(`${error_message}<br/>${description_message}`);
+    loginMenuShow();
+    $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
   }
 
-  const selectP1 = select.clone(true);
-  const selectP2 = select.clone(true);
-  selectP1.attr("id", "CHPP_Player_1");
-  selectP2.attr("id", "CHPP_Player_2");
-  $("#CHPP_Player_1").html(selectP1.html());
-  $("#CHPP_Player_2").html(selectP2.html());
+  $("#CHPP_Refresh_Data_Status").removeAttr("disabled");
+  document.getElementById("CHPP_Results").classList.remove("d-none");
+  buttonComplete($("#CHPP_Refresh_Data"));
 }
 
-function setupCHPPPlayerFields(checkUrlParameter = false) {
-  updateCHPPPlayerFields();
-  if ($("#CHPP_Player_1 option").length > 2 && $("#CHPP_Player_2 option").length > 2) {
-    $("#CHPP_Player_1 option:eq(0)").attr("selected", "selected");
-    $("#CHPP_Player_2 option:eq(1)").attr("selected", "selected");
-    setPlayerFormFields(1, checkUrlParameter);
-    setPlayerFormFields(2, checkUrlParameter);
-  }
+function setupCHPPTeamFields() {
+  const teams = SETI.Teams;
+  if (!teams || teams.length === 0) return;
+
+  const teamSelect = document.getElementById("CHPP_Team");
+  teamSelect.innerHTML = "";
+  teams.forEach((team, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = team.TeamName;
+    teamSelect.appendChild(opt);
+  });
+
+  document.getElementById("CHPP_Team_Row").classList.toggle("d-none", teams.length <= 1);
+  document.getElementById("menuLoginTitle").textContent = teams[0].TeamName;
+  loginMenuHide();
+  setupCHPPMatchFields(0);
 }
 
-function setPlayerFormFields(player, checkUrlParameter = false) {
-  if (checkUrlParameter && gup("params")) return;
-  const PlayersData = SETI.PlayersData;
-  if (!PlayersData) return;
-  const formReference = $(FORM_ID)[0];
-  const PlayerData = PlayersData[formReference[`CHPP_Player_${player}`].value];
-  if (!PlayerData) return;
+function setupCHPPMatchFields(teamIndex) {
+  const team = SETI.Teams[teamIndex];
+  const matchSelect = document.getElementById("CHPP_Match");
+  matchSelect.innerHTML = "";
 
-  formReference[`Staminia_Simple_Player_${player}_Experience`].value = PlayerData.Experience;
-  formReference[`Staminia_Simple_Player_${player}_Stamina`].value = PlayerData.StaminaSkill;
-  formReference[`Staminia_Simple_Player_${player}_Form`].value = PlayerData.PlayerForm;
-  formReference[`Staminia_Simple_Player_${player}_MainSkill`].value = PlayerData.MainSkill;
-  formReference[`Staminia_Simple_Player_${player}_Loyalty`].value = PlayerData.Loyalty;
-
-  const mbBtn = $(`#Button_Player_${player}_MotherClubBonus`);
-  const mbStatus = $(`#Button_Player_${player}_MotherClubBonus_Status`);
-  if ((PlayerData.MotherClubBonus && !mbStatus.hasClass("btn-success")) ||
-    (!PlayerData.MotherClubBonus && mbStatus.hasClass("btn-success"))) {
-    mbBtn.click();
+  if (!team.NextMatches || team.NextMatches.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "—";
+    matchSelect.appendChild(opt);
+    return;
   }
 
-  formReference[`Staminia_Advanced_Player_${player}_Experience`].value       = number_format(PlayerData.Experience,     2);
-  formReference[`Staminia_Advanced_Player_${player}_Stamina`].value          = number_format(PlayerData.StaminaSkill,   2);
-  formReference[`Staminia_Advanced_Player_${player}_Form`].value             = number_format(PlayerData.PlayerForm,     2);
-  formReference[`Staminia_Advanced_Player_${player}_Loyalty`].value          = number_format(PlayerData.Loyalty,        2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Keeper`].value     = number_format(PlayerData.KeeperSkill,    2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Defending`].value  = number_format(PlayerData.DefenderSkill,  2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Playmaking`].value = number_format(PlayerData.PlaymakerSkill, 2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Winger`].value     = number_format(PlayerData.WingerSkill,    2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Passing`].value    = number_format(PlayerData.PassingSkill,   2);
-  formReference[`Staminia_Advanced_Player_${player}_Skill_Scoring`].value    = number_format(PlayerData.ScorerSkill,    2);
+  team.NextMatches.forEach((match) => {
+    const opt = document.createElement("option");
+    opt.value = match.MatchId;
+    opt.textContent = `${match.Date} — ${match.HomeTeamName} vs ${match.AwayTeamName}`;
+    matchSelect.appendChild(opt);
+  });
+
+  fetchMatchOrders(team.NextMatches[0].MatchId, teamIndex);
+}
+
+async function fetchMatchOrders(matchId, teamIndex) {
+  teamIndex = teamIndex ?? parseInt(document.getElementById("CHPP_Team").value, 10);
+
+  let jsonObject;
+  try {
+    const response = await fetch(`chpp/chpp_retrievedata.php?matchId=${encodeURIComponent(matchId)}`);
+    if (!response.ok) throw new Error("network");
+    jsonObject = await response.json();
+  } catch (err) {
+    return;
+  }
+
+  if (jsonObject.Status === "OK") {
+    SETI.MatchOrders = jsonObject.MatchOrders;
+    SETI.Players = {};
+    for (const player of SETI.Teams[teamIndex].PlayersData) {
+      SETI.Players[player.PlayerID] = player;
+    }
+    fillFieldFromMatch();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -354,7 +386,7 @@ $("#resetApp").on("click", function (e) {
 
   checkFormButtonsAppearance();
   disableAdvancedMode();
-  setupCHPPPlayerFields();
+  resetSoccerField();
   stripeTable();
   e.preventDefault();
 });
@@ -380,99 +412,10 @@ $.validator.addMethod(
 );
 
 // ---------------------------------------------------------------------------
-// AJAX setup — CHPP data retrieval
-// ---------------------------------------------------------------------------
-$.ajaxSetup({
-  dataType: "json",
-  timeout: 30000,
-  beforeSend: function (XMLHttpRequest, settings) {
-    buttonLoading($("#CHPP_Refresh_Data"));
-    $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-clock text-white").attr("title", "");
-    $("#CHPP_Refresh_Data_Status").attr("disabled", "disabled");
-    $("#CHPP_Refresh_Data_Status").removeClass("btn-danger btn-success btn-warning").addClass("btn-progress");
-    $("#CHPP_Results").hide();
-    $("#CHPP_Status_Description").html("");
-  },
-  success: function (jsonObject) {
-    if (jsonObject.Status === "OK") {
-      try {
-        $("#menuLoginTitle").text(jsonObject.TeamName);
-        const PlayersData = jsonObject.PlayersData;
-        SETI.PlayersData = PlayersData;
-        SETI.Players = {};
-        for (const player of PlayersData) {
-          SETI.Players[player.PlayerID] = player;
-        }
-        SETI.MatchOrders = jsonObject.MatchOrders;
-        fillFieldFromMatch(true);
-        loginMenuHide();
-
-        if (jsonObject.RefreshThrottle) {
-          $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-exclamation-triangle").attr("title", SETI.messages.status_warning);
-          $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-danger btn-success").addClass("btn-warning");
-          $("#CHPP_Status_Description").text(SETI.messages.refresh_throttle(jsonObject.RefreshThrottle));
-        } else {
-          $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-check-lg text-white").attr("title", SETI.messages.status_ok);
-          $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-danger btn-warning").addClass("btn-success");
-        }
-        $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("success-text"));
-      } catch (error) {
-        $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
-        $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-success btn-warning").addClass("btn-danger");
-        loginMenuShow();
-        $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
-        $("#CHPP_Status_Description").html(`${SETI.messages.error_unknown}.<br/>${SETI.messages.retry_to_authorize}.`);
-      }
-    } else if (jsonObject.Status === "Error") {
-      let error_message, description_message;
-      if (jsonObject.ErrorCode === "InvalidToken") {
-        error_message = SETI.messages.error_invalid_token;
-        description_message = SETI.messages.retry_to_authorize;
-      } else {
-        error_message = SETI.messages.error_unknown;
-        description_message = SETI.messages.retry_to_authorize;
-      }
-      $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
-      $("#CHPP_Refresh_Data_Status").removeClass("btn-progress btn-success btn-warning").addClass("btn-danger");
-      $("#CHPP_Status_Description").html(`${error_message}<br/>${description_message}`);
-      loginMenuShow();
-      $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
-    }
-    $("#CHPP_Refresh_Data_Status").removeAttr("disabled");
-  },
-  error: function (jqXHR, textStatus) {
-    let error_message, description_message;
-    switch (textStatus) {
-      case "timeout":
-        error_message = SETI.messages.error_timeout;
-        description_message = "";
-        break;
-      case "parsererror":
-        error_message = SETI.messages.error_parser;
-        description_message = "";
-        break;
-      default:
-        error_message = SETI.messages.error_unknown;
-        description_message = SETI.messages.retry_to_authorize;
-    }
-    $("#CHPP_Refresh_Data_Status").find("i").attr("class", "bi bi-x-lg text-white").attr("title", SETI.messages.status_error);
-    $("#CHPP_Refresh_Data_Status").removeClass("btn-success btn-warning").addClass("btn-danger");
-    $("#CHPP_Status_Description").html(`${error_message}<br/>${description_message}`);
-    loginMenuShow();
-    $("#CHPP_Refresh_Data").data("complete-text", $("#CHPP_Refresh_Data").data("error-text"));
-    $("#CHPP_Refresh_Data_Status").removeAttr("disabled");
-  },
-  complete: function () {
-    $("#CHPP_Results").show();
-    buttonComplete($("#CHPP_Refresh_Data"));
-  },
-});
-
-// ---------------------------------------------------------------------------
 // CHPP click handlers
 // ---------------------------------------------------------------------------
 $("#CHPP_Refresh_Data").on("click", function () {
-  $.ajax({ url: "chpp/chpp_retrievedata.php?refresh", cache: false });
+  fetchCHPP(true);
 });
 
 $("#CHPP_Revoke_Auth_Link").on("click", function () {
@@ -480,18 +423,13 @@ $("#CHPP_Revoke_Auth_Link").on("click", function () {
   window.confirm(SETI.messages.revoke_auth_confirm);
 });
 
-// Player select change handlers
-$(`${FORM_ID} select[id=CHPP_Player_1]`).on("change", function () { setPlayerFormFields(1); });
-$(`${FORM_ID} select[id=CHPP_Player_2]`).on("change", function () { setPlayerFormFields(2); });
+document.getElementById("CHPP_Team").addEventListener("change", function () {
+  setupCHPPMatchFields(parseInt(this.value, 10));
+});
 
-$(`${FORM_ID} select[id=CHPP_Players_SortBy]`).on("change", function () {
-  updateCHPPPlayerFields();
-  if ($("#CHPP_Player_1 option").length > 2 && $("#CHPP_Player_2 option").length > 2) {
-    $("#CHPP_Player_1 option:eq(0)").attr("selected", "selected");
-    $("#CHPP_Player_2 option:eq(1)").attr("selected", "selected");
-    setPlayerFormFields(1);
-    setPlayerFormFields(2);
-  }
+document.getElementById("CHPP_Match").addEventListener("change", function () {
+  const matchId = parseInt(this.value, 10);
+  if (!isNaN(matchId)) fetchMatchOrders(matchId);
 });
 
 // Dropdown form click propagation stop
@@ -666,7 +604,7 @@ $(function () {
   const hasParams = gup("params") != null;
   if (hasParams) fillForm();
   if (document.startAjax) {
-    $.ajax({ url: "chpp/chpp_retrievedata.php", cache: true });
+    fetchCHPP(false);
   }
 
   initDragdrop($("li.drop, li.draggable"));
