@@ -291,6 +291,11 @@ function setupCHPPMatchFields(teamIndex) {
     matchSelect.appendChild(opt);
   });
 
+  // Show team players in sidebar immediately — before match orders arrive
+  if (team.PlayersData && team.PlayersData.length > 0) {
+    renderCHPPPlayerList(team.PlayersData);
+  }
+
   fetchMatchOrders(team.NextMatches[0].MatchId, teamIndex);
 }
 
@@ -304,7 +309,7 @@ async function fetchMatchOrders(matchId, teamIndex) {
     if (!response.ok) throw new Error("network");
     jsonObject = await response.json();
   } catch (err) {
-    updatePlayerListVisibility(false);
+    updatePlayerListVisibility();
     return;
   }
 
@@ -317,7 +322,7 @@ async function fetchMatchOrders(matchId, teamIndex) {
     fillFieldFromMatch();
     renderCHPPPlayerList(SETI.Teams[teamIndex].PlayersData);
   } else {
-    updatePlayerListVisibility(false);
+    updatePlayerListVisibility();
   }
 }
 
@@ -502,17 +507,17 @@ function syncPlayerAvailability() {
 }
 
 // Unified visibility control: show CHPP list if available, else show generic
-function updatePlayerListVisibility(showCHPP = false) {
+function updatePlayerListVisibility() {
   const chppPanel = document.getElementById("CHPP_Players_Panel");
   const chppList = document.getElementById("CHPP_Players_List");
   const genericList = document.querySelector(".draggablePlayers");
-  
-  if (showCHPP && chppPanel && chppList && chppList.children.length > 0) {
-    chppPanel.classList.remove("d-none");
+
+  const hasCHPP = chppList && chppList.children.length > 0;
+  if (hasCHPP) {
+    chppPanel?.classList.remove("d-none");
     genericList?.classList.add("d-none");
   } else {
-    renderGenericPlayerList();
-    chppPanel?.classList.remove("d-none");
+    chppPanel?.classList.add("d-none");
     genericList?.classList.remove("d-none");
   }
   syncPlayerAvailability();
@@ -681,7 +686,7 @@ function renderCHPPPlayerList(players) {
     });
   });
 
-  updatePlayerListVisibility(true);
+  updatePlayerListVisibility();
 }
 
 function resetSoccerField() {
@@ -692,46 +697,10 @@ function resetSoccerField() {
   syncPlayerAvailability();
 }
 
-function renderGenericPlayerList() {
-  const list = document.getElementById("CHPP_Players_List");
-  if (!list) return;
-  list.innerHTML = "";
-
-  for (const id of ["2", "5", "4", "1", "0"]) {
-    const spec = SPECIALITY_META[id];
-    const specBadgeHtml = spec
-      ? `<div class="chpp-player-spec ${spec.cls}"><img src="${spec.icon}" alt="${spec.label}"></div>`
-      : "";
-    const label = spec ? spec.label : "\u2014";
-    const row = document.createElement("div");
-    row.className = "chpp-player-row generic-row";
-    row.dataset.playerId = "generic-" + id;
-    row.draggable = true;
-    row.innerHTML = `
-      <div class="chpp-player-avatar-wrap">
-        <img class="chpp-avatar-icon" src="img/avatar-generic.svg" alt="">
-        ${specBadgeHtml}
-      </div>
-      <div class="chpp-player-info">
-        <div class="chpp-player-name">${label}</div>
-      </div>`;
-    row.addEventListener("dragstart", (e) => {
-      e.dataTransfer.setData("text/player-id", "generic-" + id);
-      row.classList.add("dragging");
-    });
-    row.addEventListener("dragend", () => {
-      row.classList.remove("dragging");
-      document.querySelectorAll(".drop.chpp-dragover").forEach(el => el.classList.remove("chpp-dragover"));
-      syncPlayerAvailability();
-    });
-    list.appendChild(row);
-  }
-}
-
 function clearCHPPPlayerPanel() {
   const list = document.getElementById("CHPP_Players_List");
   if (list) list.innerHTML = "";
-  updatePlayerListVisibility(false);
+  updatePlayerListVisibility();
 }
 
 // ---------------------------------------------------------------------------
@@ -866,23 +835,7 @@ $(function () {
 
   initDragdrop($("li.drop, li.draggable"));
 
-  // One-time setup: handle HTML5 drop of generic specialty players onto field slots
-  document.querySelectorAll(".drop").forEach(slot => {
-    slot.addEventListener("dragover", (e) => { e.preventDefault(); slot.classList.add("chpp-dragover"); });
-    slot.addEventListener("dragleave", () => { slot.classList.remove("chpp-dragover"); });
-    slot.addEventListener("drop", (e) => {
-      const pid = e.dataTransfer.getData("text/player-id");
-      if (!pid?.startsWith("generic-")) return;
-      e.preventDefault();
-      slot.classList.remove("chpp-dragover");
-      const specialtyId = pid.replace("generic-", "");
-      $(slot).html(buildGenericSpecialtyCardHtml(specialtyId));
-      syncPlayerAvailability();
-      startCalculation();
-    });
-  });
-
-  updatePlayerListVisibility(false);
+  updatePlayerListVisibility();
 });
 
 // ---------------------------------------------------------------------------
