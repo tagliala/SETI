@@ -435,7 +435,7 @@ document.getElementById("CHPP_Team").addEventListener("change", function () {
   setupCHPPMatchFields(parseInt(this.value, 10));
 });
 
-document.getElementById("CHPP_Match").addEventListener("change", function () {
+document.getElementById("CHPP_Match")?.addEventListener("change", function () {
   const matchId = parseInt(this.value, 10);
   if (!isNaN(matchId)) fetchMatchOrders(matchId);
 });
