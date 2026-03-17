@@ -166,12 +166,14 @@ $seti_version = trim(file_get_contents('VERSION'));
             <div class="soccer-field">
               <div class="soccer-field-keeper">
                 <ul class="list-unstyled players-row">
-                  <li class="player-empty-position">
+                  <li class="player-empty-position d-flex align-items-center">
                     <form action="#">
-                      <input type="checkbox" name="setPiecesTakerHead" id="setPiecesTakerHead">
-                      <label for="setPiecesTakerHead">
-                        <?= localize("Set pieces taker is header?"); ?>
-                      </label>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="setPiecesTakerHead" id="setPiecesTakerHead">
+                        <label class="form-check-label" for="setPiecesTakerHead">
+                          <?= rtrim(localize("Set pieces taker is header?"), "?"); ?>
+                        </label>
+                      </div>
                     </form>
                   </li>
                   <li class="player-empty-position"></li>
@@ -181,7 +183,7 @@ $seti_version = trim(file_get_contents('VERSION'));
                       <label for="ballPossession" class="inline">
                         <?= localize("Ball Possession"); ?>:
                       </label>
-                      <select class="ignore width-auto" id="ballPossession" name="ballPossession">
+                      <select class="form-select form-select-sm" id="ballPossession" name="ballPossession">
                         <?php for ($i = 99; $i >= 11; $i--) { ?>
                           <option value="<?= $i ?>"<?php if ($i == 50) {
                               echo ' selected="selected"';
@@ -195,7 +197,7 @@ $seti_version = trim(file_get_contents('VERSION'));
                       <label for="playCreatively" class="inline">
                         <?= localize("Play creatively"); ?>:
                       </label>
-                      <select class="ignore width-auto" id="playCreatively" name="playCreatively">
+                      <select class="form-select form-select-sm" id="playCreatively" name="playCreatively">
                         <option value="no"><?= localize("No"); ?></option>
                         <option value="yes"><?= localize("Yes"); ?></option>
                         <option value="both"><?= localize("Both"); ?></option>
@@ -231,11 +233,38 @@ $seti_version = trim(file_get_contents('VERSION'));
           </div>
           <div class="draggablePlayers">
             <ul class="list-unstyled players-row">
-              <li class="player-position draggable" id="player-speciality-2"><div class="player speciality speciality-quick"><div class="player-description"><span><?= localize("Quick"); ?></span></div></div></li>
-              <li class="player-position draggable" id="player-speciality-5"><div class="player speciality speciality-head"><div class="player-description"><span><?= localize("Head"); ?></span></div></div></li>
-              <li class="player-position draggable" id="player-speciality-4"><div class="player speciality speciality-unpredictable"><div class="player-description"><span><?= localize("Unpredictable"); ?></span></div></div></li>
-              <li class="player-position draggable" id="player-speciality-1"><div class="player speciality speciality-technical"><div class="player-description"><span><?= localize("Technical"); ?></span></div></div></li>
-              <li class="player-position draggable" id="player-speciality-0"><div class="player"></div></li>
+              <li class="player-position draggable" id="player-speciality-2">
+                <div class="player speciality speciality-quick">
+                  <div class="player-avatar"><img src="img/speciality-quick.svg" alt="quick" width="36" height="36"></div>
+                  <div class="player-description"><span><?= localize("Quick"); ?></span></div>
+                </div>
+              </li>
+              <li class="player-position draggable" id="player-speciality-5">
+                <div class="player speciality speciality-head">
+                  <div class="player-avatar"><img src="img/speciality-head.svg" alt="head" width="36" height="36"></div>
+                  <div class="player-description"><span><?= localize("Head"); ?></span></div>
+                </div>
+              </li>
+              <li class="player-position draggable" id="player-speciality-4">
+                <div class="player speciality speciality-unpredictable">
+                  <div class="player-avatar"><img src="img/speciality-unpredictable.svg" alt="unpredictable" width="36" height="36"></div>
+                  <div class="player-description"><span><?= localize("Unpredictable"); ?></span></div>
+                </div>
+              </li>
+              <li class="player-position draggable" id="player-speciality-1">
+                <div class="player speciality speciality-technical">
+                  <div class="player-avatar"><img src="img/speciality-technical.svg" alt="technical" width="36" height="36"></div>
+                  <div class="player-description"><span><?= localize("Technical"); ?></span></div>
+                </div>
+              </li>
+              <li class="player-position draggable" id="player-speciality-0">
+                <div class="player">
+                  <div class="player-avatar">
+                    <svg viewBox="0 0 24 24" fill="white" opacity="0.5" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                  </div>
+                  <div class="player-description"><span>&mdash;</span></div>
+                </div>
+              </li>
             </ul>
             <p class="text-center">
               <?= localize("Drag and drop the above players on the field to get a prediction of the estimated goals"); ?>
@@ -248,6 +277,73 @@ $seti_version = trim(file_get_contents('VERSION'));
 
       <!-- Second Column Start -->
       <div class="col-md-4">
+
+        <!-- Estimated Goals Accordion Start -->
+        <div class="accordion mb-3" id="accordionEstimatedGoals">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEstimatedGoals" aria-expanded="true" aria-controls="collapseEstimatedGoals">
+                <?= localize("Estimated goals:"); ?>&nbsp;<strong id="attendedGoals">0.00</strong>
+              </button>
+            </h2>
+            <div id="collapseEstimatedGoals" class="accordion-collapse collapse show">
+              <div class="accordion-body p-0">
+                <div id="se-tables-container" class="p-2">
+                  <table class="table table-sm d-none" id="Count_Quick" data-subtotal="0">
+                    <thead>
+                      <tr><th colspan="2"><?= localize("Quick"); ?> <strong id="Count_Quick_Subtotal"></strong></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="d-none"><td id="Count_QuickShoot" class="text-end"></td><td><?= localize("QuickShoot"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_QuickPassing" class="text-end"></td><td><?= localize("QuickPassing"); ?></td></tr>
+                    </tbody>
+                  </table>
+                  <table class="table table-sm d-none" id="Count_Head" data-subtotal="0">
+                    <thead>
+                      <tr><th colspan="2"><?= localize("Head"); ?> <strong id="Count_Head_Subtotal"></strong></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="d-none"><td id="Count_HeadCross" class="text-end"></td><td><?= localize("HeadCross"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_HeadCorner" class="text-end"></td><td><?= localize("HeadCorner"); ?></td></tr>
+                    </tbody>
+                  </table>
+                  <table class="table table-sm d-none" id="Count_Unpredictable" data-subtotal="0">
+                    <thead>
+                      <tr><th colspan="2"><?= localize("Unpredictable"); ?> <strong id="Count_Unpredictable_Subtotal"></strong></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="d-none"><td id="Count_UnpredictableKeeper" class="text-end"></td><td><?= localize("UnpredictableKeeper"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_UnpredictableShoot" class="text-end"></td><td><?= localize("UnpredictableShoot"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_UnpredictableAction" class="text-end"></td><td><?= localize("UnpredictableAction"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_UnpredictablePassing" class="text-end"></td><td><?= localize("UnpredictablePassing"); ?></td></tr>
+                      <tr class="d-none"><td id="Count_UnpredictableNegative" class="text-end"></td><td><?= localize("UnpredictableNegative"); ?></td></tr>
+                    </tbody>
+                  </table>
+                  <table class="table table-sm d-none" id="Count_Technical" data-subtotal="0">
+                    <thead>
+                      <tr><th colspan="2"><?= localize("Technical"); ?> <strong id="Count_Technical_Subtotal"></strong></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="d-none"><td id="Count_TechnicalVsHead" class="text-end"></td><td><?= localize("TechnicalVsHead"); ?></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- Estimated Goals Accordion End -->
+
+        <!-- Match select (visible after CHPP data loaded) -->
+        <?php if ($tryAjax): ?>
+        <div class="d-none mb-3" id="CHPP_Match_Row">
+          <select class="form-select form-select-lg" id="CHPP_Match"></select>
+        </div>
+        <?php endif; ?>
+
+        <!-- CHPP Players roster (visible when CHPP match is loaded) -->
+        <div class="d-none mb-3" id="CHPP_Players_Panel">
+          <div id="CHPP_Players_List"></div>
+        </div>
 
         <!-- SETI CHPP Start -->
         <div class="accordion mb-3<?php if (!$tryAjax) {
@@ -277,10 +373,7 @@ $seti_version = trim(file_get_contents('VERSION'));
                       <label class="form-label small mb-1"><?= localize("Team"); ?></label>
                       <select class="form-select form-select-sm" id="CHPP_Team"></select>
                     </div>
-                    <div class="mt-2" id="CHPP_Match_Row">
-                      <label class="form-label small mb-1"><?= localize("Match"); ?></label>
-                      <select class="form-select form-select-sm" id="CHPP_Match"></select>
-                    </div>
+
                   </div>
                 </div>
               </div>
@@ -288,50 +381,6 @@ $seti_version = trim(file_get_contents('VERSION'));
           </div>
         </div> <!-- SETI CHPP End -->
 
-        <div class="noise" id="attendedGoalsContainer">
-          <?= localize("Estimated goals:"); ?>
-          <strong id="attendedGoals">0.00</strong>
-        </div>
-        <div id="se-tables-container">
-          <table class="table table-sm hide" id="Count_Quick" data-subtotal="0">
-            <thead>
-              <tr><th colspan="2"><?= localize("Quick"); ?> <strong id="Count_Quick_Subtotal"></strong></th></tr>
-            </thead>
-            <tbody>
-              <tr class="hide"><td id="Count_QuickShoot" class="text-end"></td><td><?= localize("QuickShoot"); ?></td></tr>
-              <tr class="hide"><td id="Count_QuickPassing" class="text-end"></td><td><?= localize("QuickPassing"); ?></td></tr>
-            </tbody>
-          </table>
-          <table class="table table-sm hide" id="Count_Head" data-subtotal="0">
-            <thead>
-              <tr><th colspan="2"><?= localize("Head"); ?> <strong id="Count_Head_Subtotal"></strong></th></tr>
-            </thead>
-            <tbody>
-              <tr class="hide"><td id="Count_HeadCross" class="text-end"></td><td><?= localize("HeadCross"); ?></td></tr>
-              <tr class="hide"><td id="Count_HeadCorner" class="text-end"></td><td><?= localize("HeadCorner"); ?></td></tr>
-            </tbody>
-          </table>
-          <table class="table table-sm hide" id="Count_Unpredictable" data-subtotal="0">
-            <thead>
-              <tr><th colspan="2"><?= localize("Unpredictable"); ?> <strong id="Count_Unpredictable_Subtotal"></strong></th></tr>
-            </thead>
-            <tbody>
-              <tr class="hide"><td id="Count_UnpredictableKeeper" class="text-end"></td><td><?= localize("UnpredictableKeeper"); ?></td></tr>
-              <tr class="hide"><td id="Count_UnpredictableShoot" class="text-end"></td><td><?= localize("UnpredictableShoot"); ?></td></tr>
-              <tr class="hide"><td id="Count_UnpredictableAction" class="text-end"></td><td><?= localize("UnpredictableAction"); ?></td></tr>
-              <tr class="hide"><td id="Count_UnpredictablePassing" class="text-end"></td><td><?= localize("UnpredictablePassing"); ?></td></tr>
-              <tr class="hide"><td id="Count_UnpredictableNegative" class="text-end"></td><td><?= localize("UnpredictableNegative"); ?></td></tr>
-            </tbody>
-          </table>
-          <table class="table table-sm hide" id="Count_Technical" data-subtotal="0">
-            <thead>
-              <tr><th colspan="2"><?= localize("Technical"); ?> <strong id="Count_Technical_Subtotal"></strong></th></tr>
-            </thead>
-            <tbody>
-              <tr class="hide"><td id="Count_TechnicalVsHead" class="text-end"></td><td><?= localize("TechnicalVsHead"); ?></td></tr>
-            </tbody>
-          </table>
-        </div>
       </div> <!-- Second Column End -->
 
     </div> <!-- Second Row End -->

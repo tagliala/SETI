@@ -34,9 +34,11 @@ function getTeamDetails($HT, $team)
 
     // Only the fields SETI needs (no skills/stamina/form/experience)
     $teamPlayers = $HT->getSeniorPlayers($teamId);
+    $teamAvatars = $HT->getSeniorAvatars($teamId);
     $teamPlayersArray = [];
     for ($i = 0; $i < $teamPlayers->getPlayerNumber(); $i++) {
         $player = $teamPlayers->getPlayer($i);
+        $av = $teamAvatars->getAvatarById($player->getId());
         $teamPlayersArray[] = [
             'PlayerID'       => $player->getId(),
             'PlayerName'     => $player->getName(),
@@ -45,6 +47,7 @@ function getTeamDetails($HT, $team)
             'InjuryLevel'    => $player->getInjury(),
             'TransferListed' => $player->isTransferListed(),
             'Cards'          => $player->getCards(),
+            'Avatar'         => $av !== null ? $av->getHtml() : '',
         ];
     }
     $teamArray["PlayersData"] = $teamPlayersArray;
@@ -91,9 +94,10 @@ if ($oauthToken != null && $oauthTokenSecret != null) {
         if (isset($_GET['matchId'])) {
             // Match orders mode — return lineup/orders for a specific match
             $matchId = intval($_GET['matchId']);
+            $teamId = isset($_GET['teamId']) ? intval($_GET['teamId']) : null;
             $ordersArray = [];
             if ($matchId > 0) {
-                $orders = $HT->getSeniorMatchOrders($matchId);
+                $orders = $HT->getSeniorMatchOrders($matchId, $teamId);
                 if ($orders !== null && $orders->isDataAvailable()) {
                     for ($i = 0; $i < $orders->getPlayerNumber(); $i++) {
                         $player = $orders->getPlayer($i);

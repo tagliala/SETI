@@ -331,13 +331,37 @@ li.player-empty-position {
   height: 60px;
 }
 
-.player-position > div {
+// Empty slot — trapezoid silhouette matching player card shape
+.player-position > div:not(.player) {
   margin: 0 5px;
-  background: rgba(0, 0, 0, .25);
-  box-shadow: 1px 1px 3px rgba(0, 0, 0, .45);
-  border: 1px solid rgba(0, 0, 0, .20);
   box-sizing: border-box;
-  border-radius: 4px;
+  position: relative;
+  background: none;
+}
+
+.player-position > div:not(.player)::after {
+  content: "";
+  position: absolute;
+  top: 36%;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, .22);
+  clip-path: polygon(8px 0px, calc(100% - 8px) 0px, 100% 100%, 0px 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+// Drop hover highlight — trapezoid shaped, not a rectangle
+.player-position > div:not(.player).droppableHover::after {
+  background: rgba(255, 255, 200, 0.5);
+}
+
+.player-position > .player.droppableHover::after {
+  content: "";
+  position: absolute;
+  top: 36%; left: 0; right: 0; bottom: 0;
+  clip-path: polygon(8px 0px, calc(100% - 8px) 0px, 100% 100%, 0px 100%);
+  background: rgba(255, 255, 200, 0.3);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .highlight > div:not(.player) {
@@ -352,8 +376,7 @@ li.player-empty-position {
   box-sizing: border-box;
 }
 
-.clickable:hover > div,
-.droppableHover:after {
+.clickable:hover > div {
   background-color: rgba(255, 255, 200, 0.3) !important;
 }
 
@@ -362,37 +385,161 @@ li.player-empty-position {
 }
 
 // ============================================================
-// Player speciality images
+// Player card — trapezoid 3D card with lifting avatar
 // ============================================================
 .player-position > .player {
   position: relative;
-  background-repeat: no-repeat;
-  background-color: rgba(0, 0, 0, .60);
-  background-image: url('../img/test5.jpg');
+  background: none;
   border: none;
-  background-position: center top;
-  background-size: auto 60px;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
 }
 
-.player-position > .speciality-technical {
-  background-image: url('../img/test.jpg');
-  background-position: left bottom;
+// Trapezoid card body: narrower at top, full-width at bottom
+.player-position > .player::before {
+  content: "";
+  position: absolute;
+  top: 36%;
+  left: 4px; right: 4px; bottom: 0;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+  clip-path: polygon(8px 0px, calc(100% - 8px) 0px, 100% 100%, 0px 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.player-position > .speciality-head {
-  background-image: url('../img/test2.jpg');
-  background-position: right center;
+// Speciality accent stripe at the top of the trapezoid
+.player-position > .player.speciality-technical::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #4a9fe0 0px, #4a9fe0 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-quick::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #f0c040 0px, #f0c040 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-head::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #e05050 0px, #e05050 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-unpredictable::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #a060d0 0px, #a060d0 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-powerful::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #e08030 0px, #e08030 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-resilient::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #e03060 0px, #e03060 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+}
+.player-position > .player.speciality-leader::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(to bottom, #20b090 0px, #20b090 3px, transparent 3px),
+    linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
 }
 
-.player-position > .speciality-quick {
-  background-image: url('../img/test3.jpg');
-  background-position: center bottom;
+// Clip wrapper — constrains avatar height so it doesn't overlap the name tag.
+// The badge (outside this div) remains visible via the parent's overflow:visible.
+.player-avatar-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
-.player-position > .speciality-unpredictable {
-  background-image: url('../img/test4.jpg');
-  background-position: left bottom;
+// Avatar — sits at the top of the slot, above the trapezoid body
+.player-avatar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  overflow: visible;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
 }
+
+// Wrapper that scales the 110×155 Hattrick avatar into the 44px frame
+.ht-avatar-wrap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(0.40);
+  transform-origin: top center;
+  width: 110px;
+}
+
+.ht-avatar-wrap > div {
+  width: 110px !important;
+  height: 155px !important;
+}
+
+// Generic FA circle-user icon fallback
+.avatar-generic-icon {
+  width: 32px;
+  height: 32px;
+  margin-top: 6px;
+  filter: brightness(0) invert(1);
+  opacity: 0.70;
+}
+
+// Speciality badge — bottom-right of the avatar circle, larger
+.player-speciality-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  top: auto;
+  left: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  z-index: 3;
+  box-shadow: 0 1px 3px rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  box-sizing: border-box;
+  opacity: 0.95;
+}
+
+.player-speciality-badge img,
+.player-speciality-badge svg {
+  width: 13px;
+  height: 13px;
+  filter: brightness(0) invert(1);
+}
+
+// Colored circle background per speciality
+.player.speciality-technical .player-speciality-badge     { background: rgba(30,122,184,0.95); }
+.player.speciality-quick .player-speciality-badge         { background: rgba(200,150,12,0.95); }
+.player.speciality-powerful .player-speciality-badge      { background: rgba(210,100,20,0.95); }
+.player.speciality-head .player-speciality-badge          { background: rgba(191,43,43,0.95); }
+.player.speciality-unpredictable .player-speciality-badge { background: rgba(122,56,170,0.95); }
+.player.speciality-resilient .player-speciality-badge     { background: rgba(200,30,80,0.95); }
+.player.speciality-leader .player-speciality-badge        { background: rgba(18,160,128,0.95); }
 
 // ============================================================
 // Drag-drop states
@@ -407,29 +554,31 @@ li.player-empty-position {
 }
 
 .player-description {
+  position: relative;
   width: 100%;
-  position: absolute;
-  bottom: 0;
+  z-index: 2;
   overflow: hidden;
-  padding: 0 4px 1px;
-  line-height: 14px;
-  font-size: 10px;
-  font-weight: bold;
+  padding: 0 3px 1px;
+  line-height: 13px;
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
   text-align: center;
-  text-overflow: ellipsis;
   color: white;
-  background: rgba(0, 0, 0, .6);
-  border-top: 1px solid rgba(0, 0, 0, .1);
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px;
+  background: rgba(0, 0, 0, .65);
+  border-top: 1px solid rgba(255, 255, 255, .10);
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .player-description > span {
+  display: block;
   width: 100%;
-  white-space: pre;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-shadow: 0 1px 0 black;
+  letter-spacing: 0.02em;
 }
 
 .no-text-select {
@@ -454,11 +603,16 @@ li.player-empty-position {
   text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
 }
 
-.soccer-field form select {
+.soccer-field form select:not(.form-select) {
   padding: 0;
   height: 22px;
   line-height: 22px;
   font-size: 12px;
+  width: auto;
+}
+
+.soccer-field form .form-select {
+  width: auto;
 }
 
 .draggablePlayers p {
@@ -498,32 +652,120 @@ li.player-empty-position {
 }
 
 // ============================================================
-// Attended goals (results) container
+// CHPP Player list in sidebar
 // ============================================================
-#attendedGoalsContainer {
+#CHPP_Players_List {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.chpp-player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(0,0,0,.07);
+  cursor: grab;
+  user-select: none;
+  border-radius: 4px;
+  transition: background-color .12s;
+}
+
+.chpp-player-row:active {
+  cursor: grabbing;
+}
+
+.chpp-player-row:hover {
+  background: rgba(13, 110, 253, .07);
+}
+
+.chpp-player-row.dragging {
+  opacity: 0.45;
+}
+
+// Avatar wrapper in bench list — circle-user icon with speciality badge overlay
+.chpp-player-avatar-wrap {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.chpp-avatar-icon {
+  width: 38px;
+  height: 38px;
+  filter: brightness(0) invert(1);
+  opacity: 0.70;
   display: block;
-  width: 100%;
-  margin-bottom: 18px;
-  border: 1px solid #1a6a7a;
-  padding: 8px 4px;
-  text-align: center;
-  line-height: 24px;
-  font-size: 20px;
-  background-color: #207098;
-  color: white;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+}
+
+// Speciality badge overlaid bottom-right of the avatar in the bench list
+.chpp-player-avatar-wrap .chpp-player-spec {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 18px;
+  height: 18px;
+  padding: 3px;
   box-sizing: border-box;
-  transition: all .4s linear;
 }
 
-#attendedGoalsContainer.success {
-  border: 1px solid #486c2a;
-  background-color: #477f31;
+.chpp-player-avatar-wrap .chpp-player-spec img {
+  width: 12px;
+  height: 12px;
 }
 
-#attendedGoalsContainer.danger {
-  border: 1px solid #79303c;
-  background-color: #843434;
+.chpp-player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chpp-player-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.chpp-player-number {
+  font-size: 10px;
+  color: #6c757d;
+  line-height: 1.1;
+}
+
+.chpp-player-spec {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.chpp-player-spec img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) invert(1);
+}
+
+// Colored circle background for each speciality in sidebar list
+.chpp-player-spec.speciality-technical     { background: #1e7ab8; }
+.chpp-player-spec.speciality-quick         { background: #c8960c; }
+.chpp-player-spec.speciality-powerful      { background: #d26414; }
+.chpp-player-spec.speciality-head          { background: #bf2b2b; }
+.chpp-player-spec.speciality-unpredictable { background: #7a38aa; }
+.chpp-player-spec.speciality-resilient     { background: #c81e50; }
+.chpp-player-spec.speciality-leader        { background: #12a080; }
+
+// Slot highlight when dragging from sidebar
+.drop.chpp-dragover > div {
+  border: 2px solid rgba(255, 220, 50, .9) !important;
+  background-color: rgba(255, 220, 50, .2) !important;
 }
 
 // ============================================================

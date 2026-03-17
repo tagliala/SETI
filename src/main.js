@@ -176,6 +176,7 @@ async function fetchCHPP(refresh = false) {
   $("#CHPP_Refresh_Data_Status").attr("disabled", "disabled");
   $("#CHPP_Refresh_Data_Status").removeClass("btn-danger btn-success btn-warning").addClass("btn-progress");
   document.getElementById("CHPP_Results").classList.add("d-none");
+  document.getElementById("CHPP_Match_Row")?.classList.add("d-none");
   $("#CHPP_Status_Description").html("");
 
   let jsonObject;
@@ -263,6 +264,7 @@ function setupCHPPTeamFields() {
   });
 
   document.getElementById("CHPP_Team_Row").classList.toggle("d-none", teams.length <= 1);
+  document.getElementById("CHPP_Match_Row")?.classList.remove("d-none");
   document.getElementById("menuLoginTitle").textContent = teams[0].TeamName;
   loginMenuHide();
   setupCHPPMatchFields(0);
@@ -272,6 +274,7 @@ function setupCHPPMatchFields(teamIndex) {
   const team = SETI.Teams[teamIndex];
   const matchSelect = document.getElementById("CHPP_Match");
   matchSelect.innerHTML = "";
+  clearCHPPPlayerPanel();
 
   if (!team.NextMatches || team.NextMatches.length === 0) {
     const opt = document.createElement("option");
@@ -296,7 +299,8 @@ async function fetchMatchOrders(matchId, teamIndex) {
 
   let jsonObject;
   try {
-    const response = await fetch(`chpp/chpp_retrievedata.php?matchId=${encodeURIComponent(matchId)}`);
+    const teamId = SETI.Teams[teamIndex].TeamId;
+    const response = await fetch(`chpp/chpp_retrievedata.php?matchId=${encodeURIComponent(matchId)}&teamId=${encodeURIComponent(teamId)}`);
     if (!response.ok) throw new Error("network");
     jsonObject = await response.json();
   } catch (err) {
@@ -310,6 +314,7 @@ async function fetchMatchOrders(matchId, teamIndex) {
       SETI.Players[player.PlayerID] = player;
     }
     fillFieldFromMatch();
+    renderCHPPPlayerList(SETI.Teams[teamIndex].PlayersData);
   }
 }
 
@@ -453,6 +458,47 @@ $(window).on("resize", debounce(function () {
 // ---------------------------------------------------------------------------
 // Soccer field — match orders
 // ---------------------------------------------------------------------------
+
+// Speciality metadata: id → {class, icon, label}
+const SPECIALITY_META = {
+  "1": { cls: "speciality-technical",     icon: "img/speciality-technical.svg",     label: "Technical" },
+  "2": { cls: "speciality-quick",         icon: "img/speciality-quick.svg",         label: "Quick" },
+  "3": { cls: "speciality-powerful",      icon: "img/speciality-powerful.svg",      label: "Powerful" },
+  "4": { cls: "speciality-unpredictable", icon: "img/speciality-unpredictable.svg", label: "Unpredictable" },
+  "5": { cls: "speciality-head",          icon: "img/speciality-head.svg",          label: "Head" },
+  "6": { cls: "speciality-resilient",     icon: "img/speciality-resilient.svg",     label: "Resilient" },
+  "7": { cls: "speciality-leader",        icon: "img/speciality-leader.svg",        label: "Support" },
+};
+
+// Generic avatar — FA circle-user icon
+const AVATAR_FALLBACK = `<img src="img/avatar-generic.svg" class="avatar-generic-icon" alt="">`;
+
+// Format player display name: "N. Surname" — truncate surname to 9 chars
+function formatPlayerName(player) {
+  const shirtNo = player.PlayerNumber ? `${player.PlayerNumber}.` : "";
+  const fullName = player.PlayerName || "";
+  const parts = fullName.trim().split(/\s+/);
+  const surname = parts.length > 1 ? parts[parts.length - 1] : fullName;
+  const display = surname.length > 9 ? surname.slice(0, 9) + "…" : surname;
+  return shirtNo ? `${shirtNo} ${display}` : display;
+}
+
+// Build inner HTML for a player card placed on the field
+function buildPlayerCardHtml(player, speciality) {
+  const spec = SPECIALITY_META[speciality];
+  const specClass = spec ? spec.cls : "";
+  const specBadge = spec
+    ? `<div class="player-speciality-badge"><img src="${spec.icon}" alt="${spec.label}" width="14" height="14"></div>`
+    : "";
+  const name = formatPlayerName(player);
+  const avatarContent = player.Avatar ? `<div class="ht-avatar-wrap">${player.Avatar}</div>` : AVATAR_FALLBACK;
+
+  return `<div class="player${specClass ? " speciality " + specClass : ""}" data-player-id="${player.PlayerID}">
+    <div class="player-avatar"><div class="player-avatar-clip">${avatarContent}</div>${specBadge}</div>
+    <div class="player-description"><span>${name}</span></div>
+  </div>`;
+}
+
 function fillFieldFromMatch() {
   if (!SETI.MatchOrders) return;
   resetSoccerField();
@@ -460,17 +506,102 @@ function fillFieldFromMatch() {
   for (const order of SETI.MatchOrders) {
     const position = Number(order.Position);
     const player = Players[order.PlayerID];
+    if (!player) continue; // skip opponent players
     if (position === 17) { // Set pieces taker
       if (player.Speciality === "5") { // Head
         $("#setPiecesTakerHead").prop("checked", true);
       }
     }
-    if (position < 100) continue; // Keeper
-    let speciality = player.Speciality;
+    if (position < 100) continue;
+    let speciality = String(player.Speciality ?? "0");
     if (speciality === "3" || speciality === "6") speciality = "0"; // harmless specialities
-    $(`#position-${position}`).html($(`#player-speciality-${speciality}`).html());
+    $(`#position-${position}`).html(buildPlayerCardHtml(player, speciality));
   }
   startCalculation();
+}
+
+// ---------------------------------------------------------------------------
+// CHPP sidebar player list
+// ---------------------------------------------------------------------------
+function renderCHPPPlayerList(players) {
+  const panel = document.getElementById("CHPP_Players_Panel");
+  const list = document.getElementById("CHPP_Players_List");
+  if (!panel || !list) return;
+
+  list.innerHTML = "";
+
+  const sorted = [...players].sort((a, b) => {
+    const na = Number(a.PlayerNumber) || 99;
+    const nb = Number(b.PlayerNumber) || 99;
+    return na - nb;
+  });
+
+  for (const player of sorted) {
+    const specKey = String(player.Speciality ?? "0");
+    const spec = SPECIALITY_META[specKey];
+    const specBadgeHtml = spec
+      ? `<div class="chpp-player-spec ${spec.cls}"><img src="${spec.icon}" alt="${spec.label}"></div>`
+      : "";
+    const name = player.PlayerName || "—";
+
+    const row = document.createElement("div");
+    row.className = "chpp-player-row";
+    row.dataset.playerId = player.PlayerID;
+    row.draggable = true;
+    row.innerHTML = `
+      <div class="chpp-player-avatar-wrap">
+        <img class="chpp-avatar-icon" src="img/avatar-generic.svg" alt="">
+        ${specBadgeHtml}
+      </div>
+      <div class="chpp-player-info">
+        <div class="chpp-player-name">${name}</div>
+      </div>`;
+
+    // HTML5 drag from sidebar to field slots
+    row.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/player-id", player.PlayerID);
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      document.querySelectorAll(".drop.chpp-dragover").forEach(el => el.classList.remove("chpp-dragover"));
+    });
+
+    list.appendChild(row);
+  }
+
+  // Wire field slots to accept drops from sidebar
+  document.querySelectorAll(".drop").forEach(slot => {
+    slot.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      slot.classList.add("chpp-dragover");
+    });
+    slot.addEventListener("dragleave", () => {
+      slot.classList.remove("chpp-dragover");
+    });
+    slot.addEventListener("drop", (e) => {
+      e.preventDefault();
+      slot.classList.remove("chpp-dragover");
+      const pid = e.dataTransfer.getData("text/player-id");
+      if (!pid) return;
+      const player = SETI.Players[pid];
+      if (!player) return;
+      const $slot = $(slot);
+      // Block if the same player is already somewhere on the field
+      if (document.querySelector(`.drop .player[data-player-id="${pid}"]`)) return;
+      // Only allow if < 10 players or it's a swap, or keeper slot
+      const isKeeper = slot.classList.contains("position-keeper");
+      const fieldCount = $(".soccer-field-movement").find(".player").length;
+      if (!isKeeper && fieldCount >= 10 && !$slot.find(".player").length) return;
+      let speciality = String(player.Speciality ?? "0");
+      if (speciality === "3" || speciality === "6") speciality = "0";
+      $slot.html(buildPlayerCardHtml(player, speciality));
+      startCalculation();
+    });
+  });
+
+  panel.classList.remove("d-none");
+  document.querySelector(".draggablePlayers")?.classList.add("d-none");
 }
 
 function resetSoccerField() {
@@ -478,6 +609,14 @@ function resetSoccerField() {
   $("#setPiecesTakerHead").prop("checked", false);
   $("#playCreatively").val("No");
   $("#ballPossession").val(50);
+}
+
+function clearCHPPPlayerPanel() {
+  const panel = document.getElementById("CHPP_Players_Panel");
+  if (panel) panel.classList.add("d-none");
+  const list = document.getElementById("CHPP_Players_List");
+  if (list) list.innerHTML = "";
+  document.querySelector(".draggablePlayers")?.classList.remove("d-none");
 }
 
 // ---------------------------------------------------------------------------
@@ -561,11 +700,10 @@ function initDragdrop($element) {
 // Calculation
 // ---------------------------------------------------------------------------
 function resetResults() {
-  $("#attendedGoalsContainer").removeClass("success danger");
   $("#attendedGoals").text("0.00");
   $("#se-tables-container table").each(function () {
     $(this).data("subtotal", 0);
-    $(this).hide();
+    $(this).addClass("d-none");
   });
 }
 
@@ -573,23 +711,18 @@ function startCalculation() {
   setTimeout(function () {
     resetResults();
     const results = SETI.Engine.start();
-    if (results.goals < 0) {
-      $("#attendedGoalsContainer").addClass("danger");
-    } else if (results.goals > 0) {
-      $("#attendedGoalsContainer").addClass("success");
-    }
     $("#attendedGoals").text(results.goals.toFixed(2));
     for (const specialEvent of SETI.Engine.SpecialEvents) {
       const currentSeGoals = results.SE[specialEvent.name];
       if (currentSeGoals != null) {
-        $(`#Count_${specialEvent.name}`).text(currentSeGoals.toFixed(4)).closest("tr").show();
+        $(`#Count_${specialEvent.name}`).text(currentSeGoals.toFixed(4)).closest("tr").removeClass("d-none");
         const $table = $(`#Count_${specialEvent.family}`);
         const subtotal = ($table.data("subtotal") || 0) + currentSeGoals;
         $table.data("subtotal", subtotal);
         $(`#Count_${specialEvent.family}_Subtotal`).text(`(${subtotal.toFixed(4)})`);
-        $table.show();
+        $table.removeClass("d-none");
       } else {
-        $(`#Count_${specialEvent.name}`).closest("tr").hide();
+        $(`#Count_${specialEvent.name}`).closest("tr").addClass("d-none");
       }
     }
     stripeTable();
