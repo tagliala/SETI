@@ -281,6 +281,13 @@ function setupCHPPMatchFields(teamIndex) {
     opt.value = "";
     opt.textContent = "—";
     matchSelect.appendChild(opt);
+    if (team.PlayersData && team.PlayersData.length > 0) {
+      SETI.Players = {};
+      for (const player of team.PlayersData) {
+        SETI.Players[player.PlayerID] = player;
+      }
+      renderCHPPPlayerList(team.PlayersData);
+    }
     return;
   }
 
@@ -590,7 +597,7 @@ function fillFieldFromMatch() {
     const player = Players[order.PlayerID];
     if (!player) continue; // skip opponent players
     if (position === 17) { // Set pieces taker
-      if (player.Speciality === "5") { // Head
+      if (String(player.Speciality) === "5") { // Head
         $("#setPiecesTakerHead").prop("checked", true);
       }
     }
