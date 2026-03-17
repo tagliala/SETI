@@ -183,7 +183,7 @@ $seti_version = trim(file_get_contents('VERSION'));
                       <label for="ballPossession" class="inline">
                         <?= localize("Ball Possession"); ?>:
                       </label>
-                      <select class="form-select form-select-sm" id="ballPossession" name="ballPossession">
+                      <select class="form-select form-select-sm m-auto" id="ballPossession" name="ballPossession">
                         <?php for ($i = 99; $i >= 11; $i--) { ?>
                           <option value="<?= $i ?>"<?php if ($i == 50) {
                               echo ' selected="selected"';
@@ -197,7 +197,7 @@ $seti_version = trim(file_get_contents('VERSION'));
                       <label for="playCreatively" class="inline">
                         <?= localize("Play creatively"); ?>:
                       </label>
-                      <select class="form-select form-select-sm" id="playCreatively" name="playCreatively">
+                      <select class="form-select form-select-sm m-auto" id="playCreatively" name="playCreatively">
                         <option value="no"><?= localize("No"); ?></option>
                         <option value="yes"><?= localize("Yes"); ?></option>
                         <option value="both"><?= localize("Both"); ?></option>
@@ -235,32 +235,44 @@ $seti_version = trim(file_get_contents('VERSION'));
             <ul class="list-unstyled players-row">
               <li class="player-position draggable" id="player-speciality-2" data-specialty-id="2">
                 <div class="player speciality speciality-quick" data-player-id="generic-2">
-                  <div class="player-avatar"><img src="img/speciality-quick.svg" alt="quick" width="36" height="36"></div>
+                  <div class="player-avatar">
+                    <div class="player-avatar-clip generic-bg"><img src="img/avatar-generic.svg" class="avatar-generic-icon" alt=""></div>
+                    <div class="player-speciality-badge"><img src="img/speciality-quick.svg" alt="" width="14" height="14"></div>
+                  </div>
                   <div class="player-description"><span><?= localize("Quick"); ?></span></div>
                 </div>
               </li>
               <li class="player-position draggable" id="player-speciality-5" data-specialty-id="5">
                 <div class="player speciality speciality-head" data-player-id="generic-5">
-                  <div class="player-avatar"><img src="img/speciality-head.svg" alt="head" width="36" height="36"></div>
+                  <div class="player-avatar">
+                    <div class="player-avatar-clip generic-bg"><img src="img/avatar-generic.svg" class="avatar-generic-icon" alt=""></div>
+                    <div class="player-speciality-badge"><img src="img/speciality-head.svg" alt="" width="14" height="14"></div>
+                  </div>
                   <div class="player-description"><span><?= localize("Head"); ?></span></div>
                 </div>
               </li>
               <li class="player-position draggable" id="player-speciality-4" data-specialty-id="4">
                 <div class="player speciality speciality-unpredictable" data-player-id="generic-4">
-                  <div class="player-avatar"><img src="img/speciality-unpredictable.svg" alt="unpredictable" width="36" height="36"></div>
+                  <div class="player-avatar">
+                    <div class="player-avatar-clip generic-bg"><img src="img/avatar-generic.svg" class="avatar-generic-icon" alt=""></div>
+                    <div class="player-speciality-badge"><img src="img/speciality-unpredictable.svg" alt="" width="14" height="14"></div>
+                  </div>
                   <div class="player-description"><span><?= localize("Unpredictable"); ?></span></div>
                 </div>
               </li>
               <li class="player-position draggable" id="player-speciality-1" data-specialty-id="1">
                 <div class="player speciality speciality-technical" data-player-id="generic-1">
-                  <div class="player-avatar"><img src="img/speciality-technical.svg" alt="technical" width="36" height="36"></div>
+                  <div class="player-avatar">
+                    <div class="player-avatar-clip generic-bg"><img src="img/avatar-generic.svg" class="avatar-generic-icon" alt=""></div>
+                    <div class="player-speciality-badge"><img src="img/speciality-technical.svg" alt="" width="14" height="14"></div>
+                  </div>
                   <div class="player-description"><span><?= localize("Technical"); ?></span></div>
                 </div>
               </li>
               <li class="player-position draggable" id="player-speciality-0" data-specialty-id="0">
                 <div class="player" data-player-id="generic-0">
                   <div class="player-avatar">
-                    <svg viewBox="0 0 24 24" fill="white" opacity="0.5" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    <div class="player-avatar-clip generic-bg"><img src="img/avatar-generic.svg" class="avatar-generic-icon" alt=""></div>
                   </div>
                   <div class="player-description"><span>&mdash;</span></div>
                 </div>

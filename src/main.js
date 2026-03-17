@@ -567,9 +567,11 @@ function buildGenericSpecialtyCardHtml(specialtyId) {
   const spec = SPECIALITY_META[specialtyId];
   const specClass = spec ? spec.cls : "";
   const label = spec ? spec.label : "—";
-  const userIcon = `<svg class="generic-user-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  const specBadge = spec
+    ? `<div class="player-speciality-badge"><img src="${spec.icon}" alt="${spec.label}" width="14" height="14"></div>`
+    : "";
   return `<div class="player generic-specialty${specClass ? " " + specClass : ""}" data-player-id="generic-${specialtyId}">
-    <div class="player-avatar generic-portrait">${userIcon}</div>
+    <div class="player-avatar"><div class="player-avatar-clip generic-bg">${AVATAR_FALLBACK}</div>${specBadge}</div>
     <div class="player-description"><span>${label}</span></div>
   </div>`;
 }
