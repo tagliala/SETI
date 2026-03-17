@@ -481,6 +481,28 @@ li.player-empty-position {
   pointer-events: none;
 }
 
+// Generic portrait avatar — 100x145 px rectangle for generic specialty players
+.player-avatar.generic-portrait {
+  width: 100px;
+  height: 145px;
+  background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, rgba(255,255,255,0) 52%),
+              linear-gradient(160deg, #2a4a8a 0%, #1a2d5a 55%, #0e1c3a 100%);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 6px rgba(0,0,0,.4);
+}
+
+// User icon overlay on generic portrait
+.generic-user-icon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.70;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+
 // Wrapper that scales the 110×155 Hattrick avatar into the 44px frame
 .ht-avatar-wrap {
   position: absolute;
@@ -578,6 +600,20 @@ li.player-empty-position {
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 0 black;
+}
+
+// ============================================================
+// Player unavailability (duplicate prevention)
+// ============================================================
+.draggablePlayers .draggable.unavailable,
+#CHPP_Players_List .chpp-player-row.unavailable {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+}
+
+.draggablePlayers .draggable.unavailable .player,
+#CHPP_Players_List .chpp-player-row.unavailable {
+  pointer-events: none;
   letter-spacing: 0.02em;
 }
 

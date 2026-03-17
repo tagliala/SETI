@@ -233,32 +233,32 @@ $seti_version = trim(file_get_contents('VERSION'));
           </div>
           <div class="draggablePlayers">
             <ul class="list-unstyled players-row">
-              <li class="player-position draggable" id="player-speciality-2">
-                <div class="player speciality speciality-quick">
+              <li class="player-position draggable" id="player-speciality-2" data-specialty-id="2">
+                <div class="player speciality speciality-quick" data-player-id="generic-2">
                   <div class="player-avatar"><img src="img/speciality-quick.svg" alt="quick" width="36" height="36"></div>
                   <div class="player-description"><span><?= localize("Quick"); ?></span></div>
                 </div>
               </li>
-              <li class="player-position draggable" id="player-speciality-5">
-                <div class="player speciality speciality-head">
+              <li class="player-position draggable" id="player-speciality-5" data-specialty-id="5">
+                <div class="player speciality speciality-head" data-player-id="generic-5">
                   <div class="player-avatar"><img src="img/speciality-head.svg" alt="head" width="36" height="36"></div>
                   <div class="player-description"><span><?= localize("Head"); ?></span></div>
                 </div>
               </li>
-              <li class="player-position draggable" id="player-speciality-4">
-                <div class="player speciality speciality-unpredictable">
+              <li class="player-position draggable" id="player-speciality-4" data-specialty-id="4">
+                <div class="player speciality speciality-unpredictable" data-player-id="generic-4">
                   <div class="player-avatar"><img src="img/speciality-unpredictable.svg" alt="unpredictable" width="36" height="36"></div>
                   <div class="player-description"><span><?= localize("Unpredictable"); ?></span></div>
                 </div>
               </li>
-              <li class="player-position draggable" id="player-speciality-1">
-                <div class="player speciality speciality-technical">
+              <li class="player-position draggable" id="player-speciality-1" data-specialty-id="1">
+                <div class="player speciality speciality-technical" data-player-id="generic-1">
                   <div class="player-avatar"><img src="img/speciality-technical.svg" alt="technical" width="36" height="36"></div>
                   <div class="player-description"><span><?= localize("Technical"); ?></span></div>
                 </div>
               </li>
-              <li class="player-position draggable" id="player-speciality-0">
-                <div class="player">
+              <li class="player-position draggable" id="player-speciality-0" data-specialty-id="0">
+                <div class="player" data-player-id="generic-0">
                   <div class="player-avatar">
                     <svg viewBox="0 0 24 24" fill="white" opacity="0.5" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                   </div>

@@ -304,6 +304,7 @@ async function fetchMatchOrders(matchId, teamIndex) {
     if (!response.ok) throw new Error("network");
     jsonObject = await response.json();
   } catch (err) {
+    updatePlayerListVisibility(false);
     return;
   }
 
@@ -315,6 +316,8 @@ async function fetchMatchOrders(matchId, teamIndex) {
     }
     fillFieldFromMatch();
     renderCHPPPlayerList(SETI.Teams[teamIndex].PlayersData);
+  } else {
+    updatePlayerListVisibility(false);
   }
 }
 
@@ -456,6 +459,66 @@ $(window).on("resize", debounce(function () {
 }, 500));
 
 // ---------------------------------------------------------------------------
+// Player list visibility & state management
+// ---------------------------------------------------------------------------
+
+// Compute set of player IDs currently placed on the field
+function getUnavailablePlayerIds() {
+  const unavailable = new Set();
+  document.querySelectorAll(".drop .player[data-player-id]").forEach(card => {
+    unavailable.add(card.dataset.playerId);
+  });
+  return unavailable;
+}
+
+// Sync unavailable state in draggable list and CHPP sidebar
+function syncPlayerAvailability() {
+  const unavailable = getUnavailablePlayerIds();
+  
+  // Update generic draggable players
+  document.querySelectorAll(".draggablePlayers .draggable").forEach(li => {
+    const card = li.querySelector(".player");
+    const playerId = card?.dataset.playerId;
+    if (playerId && unavailable.has(playerId)) {
+      li.classList.add("unavailable");
+      li.draggable = false;
+    } else {
+      li.classList.remove("unavailable");
+      li.draggable = true;
+    }
+  });
+  
+  // Update CHPP sidebar rows
+  document.querySelectorAll("#CHPP_Players_List .chpp-player-row").forEach(row => {
+    const playerId = row.dataset.playerId;
+    if (playerId && unavailable.has(playerId)) {
+      row.classList.add("unavailable");
+      row.draggable = false;
+    } else {
+      row.classList.remove("unavailable");
+      row.draggable = true;
+    }
+  });
+}
+
+// Unified visibility control: show CHPP list if available, else show generic
+function updatePlayerListVisibility(showCHPP = false) {
+  const chppPanel = document.getElementById("CHPP_Players_Panel");
+  const chppList = document.getElementById("CHPP_Players_List");
+  const genericList = document.querySelector(".draggablePlayers");
+  
+  if (showCHPP && chppPanel && chppList && chppList.children.length > 0) {
+    chppPanel.classList.remove("d-none");
+    genericList?.classList.add("d-none");
+  } else {
+    chppPanel?.classList.add("d-none");
+    chppList?.classList.remove("d-none");
+    genericList?.classList.remove("d-none");
+  }
+  syncPlayerAvailability();
+}
+
+// ---------------------------------------------------------------------------
 // Soccer field — match orders
 // ---------------------------------------------------------------------------
 
@@ -499,6 +562,18 @@ function buildPlayerCardHtml(player, speciality) {
   </div>`;
 }
 
+// Build portrait card for generic specialty players (100x145 format with user-icon overlay)
+function buildGenericSpecialtyCardHtml(specialtyId) {
+  const spec = SPECIALITY_META[specialtyId];
+  const specClass = spec ? spec.cls : "";
+  const label = spec ? spec.label : "—";
+  const userIcon = `<svg class="generic-user-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  return `<div class="player generic-specialty${specClass ? " " + specClass : ""}" data-player-id="generic-${specialtyId}">
+    <div class="player-avatar generic-portrait">${userIcon}</div>
+    <div class="player-description"><span>${label}</span></div>
+  </div>`;
+}
+
 function fillFieldFromMatch() {
   if (!SETI.MatchOrders) return;
   resetSoccerField();
@@ -518,6 +593,7 @@ function fillFieldFromMatch() {
     $(`#position-${position}`).html(buildPlayerCardHtml(player, speciality));
   }
   startCalculation();
+  syncPlayerAvailability();
 }
 
 // ---------------------------------------------------------------------------
@@ -565,6 +641,7 @@ function renderCHPPPlayerList(players) {
     row.addEventListener("dragend", () => {
       row.classList.remove("dragging");
       document.querySelectorAll(".drop.chpp-dragover").forEach(el => el.classList.remove("chpp-dragover"));
+      syncPlayerAvailability();
     });
 
     list.appendChild(row);
@@ -596,12 +673,13 @@ function renderCHPPPlayerList(players) {
       let speciality = String(player.Speciality ?? "0");
       if (speciality === "3" || speciality === "6") speciality = "0";
       $slot.html(buildPlayerCardHtml(player, speciality));
+      syncPlayerAvailability();
+      syncPlayerAvailability();
       startCalculation();
     });
   });
 
-  panel.classList.remove("d-none");
-  document.querySelector(".draggablePlayers")?.classList.add("d-none");
+  updatePlayerListVisibility(true);
 }
 
 function resetSoccerField() {
@@ -609,14 +687,13 @@ function resetSoccerField() {
   $("#setPiecesTakerHead").prop("checked", false);
   $("#playCreatively").val("No");
   $("#ballPossession").val(50);
+  syncPlayerAvailability();
 }
 
 function clearCHPPPlayerPanel() {
-  const panel = document.getElementById("CHPP_Players_Panel");
-  if (panel) panel.classList.add("d-none");
   const list = document.getElementById("CHPP_Players_List");
   if (list) list.innerHTML = "";
-  document.querySelector(".draggablePlayers")?.classList.remove("d-none");
+  updatePlayerListVisibility(false);
 }
 
 // ---------------------------------------------------------------------------
@@ -640,7 +717,16 @@ function highlightDropElements(clickable = false) {
 }
 
 function setPlayerInField($src, $dst) {
-  $dst.html($src.html());
+  const player = $src.find(".player");
+  const playerId = player.attr("data-player-id");
+  
+  // Detect if this is a generic specialty player (id format: generic-X)
+  if (playerId && playerId.startsWith("generic-")) {
+    const specialtyId = playerId.replace("generic-", "");
+    $dst.html(buildGenericSpecialtyCardHtml(specialtyId));
+  } else {
+    $dst.html($src.html());
+  }
 }
 
 function switchPlayersInField($src, $dst) {
