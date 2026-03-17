@@ -511,8 +511,8 @@ function updatePlayerListVisibility(showCHPP = false) {
     chppPanel.classList.remove("d-none");
     genericList?.classList.add("d-none");
   } else {
-    chppPanel?.classList.add("d-none");
-    chppList?.classList.remove("d-none");
+    renderGenericPlayerList();
+    chppPanel?.classList.remove("d-none");
     genericList?.classList.remove("d-none");
   }
   syncPlayerAvailability();
@@ -692,6 +692,42 @@ function resetSoccerField() {
   syncPlayerAvailability();
 }
 
+function renderGenericPlayerList() {
+  const list = document.getElementById("CHPP_Players_List");
+  if (!list) return;
+  list.innerHTML = "";
+
+  for (const id of ["2", "5", "4", "1", "0"]) {
+    const spec = SPECIALITY_META[id];
+    const specBadgeHtml = spec
+      ? `<div class="chpp-player-spec ${spec.cls}"><img src="${spec.icon}" alt="${spec.label}"></div>`
+      : "";
+    const label = spec ? spec.label : "\u2014";
+    const row = document.createElement("div");
+    row.className = "chpp-player-row generic-row";
+    row.dataset.playerId = "generic-" + id;
+    row.draggable = true;
+    row.innerHTML = `
+      <div class="chpp-player-avatar-wrap">
+        <img class="chpp-avatar-icon" src="img/avatar-generic.svg" alt="">
+        ${specBadgeHtml}
+      </div>
+      <div class="chpp-player-info">
+        <div class="chpp-player-name">${label}</div>
+      </div>`;
+    row.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/player-id", "generic-" + id);
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      document.querySelectorAll(".drop.chpp-dragover").forEach(el => el.classList.remove("chpp-dragover"));
+      syncPlayerAvailability();
+    });
+    list.appendChild(row);
+  }
+}
+
 function clearCHPPPlayerPanel() {
   const list = document.getElementById("CHPP_Players_List");
   if (list) list.innerHTML = "";
@@ -829,6 +865,24 @@ $(function () {
   }
 
   initDragdrop($("li.drop, li.draggable"));
+
+  // One-time setup: handle HTML5 drop of generic specialty players onto field slots
+  document.querySelectorAll(".drop").forEach(slot => {
+    slot.addEventListener("dragover", (e) => { e.preventDefault(); slot.classList.add("chpp-dragover"); });
+    slot.addEventListener("dragleave", () => { slot.classList.remove("chpp-dragover"); });
+    slot.addEventListener("drop", (e) => {
+      const pid = e.dataTransfer.getData("text/player-id");
+      if (!pid?.startsWith("generic-")) return;
+      e.preventDefault();
+      slot.classList.remove("chpp-dragover");
+      const specialtyId = pid.replace("generic-", "");
+      $(slot).html(buildGenericSpecialtyCardHtml(specialtyId));
+      syncPlayerAvailability();
+      startCalculation();
+    });
+  });
+
+  updatePlayerListVisibility(false);
 });
 
 // ---------------------------------------------------------------------------
